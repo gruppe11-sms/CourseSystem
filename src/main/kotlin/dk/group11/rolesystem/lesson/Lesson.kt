@@ -6,4 +6,7 @@ import javax.persistence.Entity
 import javax.persistence.OneToMany
 
 @Entity
-data class Lesson(@OneToMany var room: List<Room> = ArrayList<Room>()) : Activity()
+data class Lesson(
+        @OneToMany
+        var room: List<Room> = ArrayList<Room>()
+) : Activity()

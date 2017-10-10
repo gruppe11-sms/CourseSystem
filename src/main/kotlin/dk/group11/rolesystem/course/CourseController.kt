@@ -1,9 +1,7 @@
 package dk.group11.rolesystem.course
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class CourseController {
@@ -21,4 +19,16 @@ class CourseController {
     fun getCourses(): Iterable<Course> {
         return courseService.getCourses()
     }
+
+    @PutMapping("/api/courses")
+    fun updateCourse(@RequestBody course : Course) {
+        return courseService.updateCourse(course)
+    }
+
+    @DeleteMapping("/api/courses/{id}")
+    fun deleteCourse(id : Long){
+        return courseService.deleteCourse(id)
+    }
+
+
 }

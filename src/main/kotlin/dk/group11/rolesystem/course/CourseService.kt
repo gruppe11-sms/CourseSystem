@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class CourseService {
+class CourseService(
+) {
+    lateinit var courserepo : CourseRepository
     val s: List<Room> = Arrays.asList(
             Room("Test", 1, 2)
     )
@@ -21,7 +23,11 @@ class CourseService {
             Course("Test3", Date(), Date(), testLesson, testParticipants),
             Course("Test4", Date(), Date(), testLesson, testParticipants),
             Course("Test5", Date(), Date(), testLesson, testParticipants)
+
+
     )
+
+
 
     fun getCourseById(id: Long): Course {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -30,4 +36,13 @@ class CourseService {
     fun getCourses(): Iterable<Course> {
         return course
     }
+
+    fun updateCourse(course: Course) {
+        courserepo.save(course)
+    }
+
+    fun deleteCourse(id:Long){
+        courserepo.delete(id)
+    }
+
 }
