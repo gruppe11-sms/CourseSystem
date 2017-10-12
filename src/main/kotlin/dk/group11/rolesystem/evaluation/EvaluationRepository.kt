@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository
 
 interface EvaluationRepository : CrudRepository<Evaluation,Long> {
 
-    fun findByCourseId(id: Long): Iterable<Evaluation>
+    //fun findByCourseId(id: Long): Iterable<Evaluation>
 
-    fun findByCourseIdAndEvaluationId(courseid : Long, lessonid : Long) : Evaluation
+    //fun findByCourseIdAndEvaluationId(courseId : Long, lessonId : Long) : Evaluation
 }

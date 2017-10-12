@@ -1,18 +1,18 @@
 package dk.group11.rolesystem.course
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 @RestController
-class CourseController {
+class CourseController(val courseService: CourseService) {
 
-
-    @Autowired
-    val courseService = CourseService()
+    @GetMapping("/api")
+    fun sayHello(): String {
+        return "Hello"
+    }
 
     @GetMapping("/api/courses/{id}")
-    fun getCourseById(@PathVariable id: String): String {
-        return ""
+    fun getCourseById(@PathVariable id: Long): Course {
+        return courseService.getCourseById(id)
     }
 
     @GetMapping("/api/courses")
@@ -23,6 +23,11 @@ class CourseController {
     @PutMapping("/api/courses")
     fun updateCourse(@RequestBody course : Course) {
         return courseService.updateCourse(course)
+    }
+
+    @PostMapping("/api/courses/{id}/participant")
+    fun saveParticipant(@PathVariable id: Long, @RequestBody participant: Participant) {
+        courseService.saveParticipant(id, participant)
     }
 
     @DeleteMapping("/api/courses/{id}")

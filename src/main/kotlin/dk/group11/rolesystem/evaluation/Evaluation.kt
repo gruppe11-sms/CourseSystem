@@ -1,15 +1,13 @@
 package dk.group11.rolesystem.evaluation
 
-import dk.group11.rolesystem.user.User
 import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
 
 @Entity
 data class Evaluation(
-        var grade : String ="",
-        var feedback : String ="",
-        var evaluator : User = User(),
-        var evaluee : User = User()
-        //file
-        ){
-
-}
+        var grade: String = "",
+        var feedback: String = "",
+        @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0
+)

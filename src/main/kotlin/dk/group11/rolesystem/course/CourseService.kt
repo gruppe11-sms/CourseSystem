@@ -1,48 +1,50 @@
 package dk.group11.rolesystem.course
 
-import dk.group11.rolesystem.lesson.Lesson
-import dk.group11.rolesystem.room.Room
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class CourseService(
+        private val courseRepo: CourseRepository
 ) {
-    lateinit var courserepo : CourseRepository
-    val s: List<Room> = Arrays.asList(
-            Room("Test", 1, 2)
-    )
-    val testLesson: List<Lesson> = Arrays.asList(
-            Lesson(s)
-    )
-    val testParticipants: List<Participant> = ArrayList<Participant>()
-
-    val course: List<Course> = Arrays.asList(
-            Course("Test1", Date(), Date(), testLesson, testParticipants),
-            Course("Test2", Date(), Date(), testLesson, testParticipants),
-            Course("Test3", Date(), Date(), testLesson, testParticipants),
-            Course("Test4", Date(), Date(), testLesson, testParticipants),
-            Course("Test5", Date(), Date(), testLesson, testParticipants)
 
 
-    )
+    //val testParticipant: Participant = Participant()
 
 
+    init {
+        val testParticipants = mutableListOf(Participant())
+        val course: List<Course> = Arrays.asList(
+                Course("Test1", Date(), Date(), testParticipants),
+                Course("Test2", Date(), Date()),
+                Course("Test3", Date(), Date()),
+                Course("Test4", Date(), Date()),
+                Course("Test5", Date(), Date()))
 
-    fun getCourseById(id: Long): Course {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        courseRepo.save(course)
+    }
+
+    fun getCourseById(courseId: Long): Course {
+        return courseRepo.findOne(courseId)
     }
 
     fun getCourses(): Iterable<Course> {
-        return course
+        return courseRepo.findAll()
     }
 
     fun updateCourse(course: Course) {
-        courserepo.save(course)
+        courseRepo.save(course)
     }
 
     fun deleteCourse(id:Long){
-        courserepo.delete(id)
+        courseRepo.delete(id)
+    }
+
+    fun saveParticipant(id: Long, participant: Participant) {
+        val c = courseRepo.findOne(id)
+        c.participant.add(participant)
+        courseRepo.save(c)
+
     }
 
 }
