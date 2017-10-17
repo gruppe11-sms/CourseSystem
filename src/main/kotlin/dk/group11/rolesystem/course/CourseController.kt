@@ -25,11 +25,6 @@ class CourseController(val courseService: CourseService) {
         return courseService.updateCourse(course)
     }
 
-    @PostMapping("/api/courses/{id}/participant")
-    fun saveParticipant(@PathVariable id: Long, @RequestBody participant: Participant) {
-        courseService.saveParticipant(id, participant)
-    }
-
     @DeleteMapping("/api/courses/{id}")
     fun deleteCourse(id : Long){
         return courseService.deleteCourse(id)
