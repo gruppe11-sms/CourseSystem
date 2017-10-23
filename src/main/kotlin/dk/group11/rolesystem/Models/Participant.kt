@@ -6,12 +6,12 @@ import javax.persistence.*
 @Entity
 data class Participant(
         @ManyToOne
-        @JoinColumn(name = "course_id")
+        //@JoinColumn(name = "course_id")
         @JsonBackReference
         var course: Course = Course(),
         var userId: Long = 0,
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL))
+        @OneToMany(mappedBy = "participant", cascade = arrayOf(CascadeType.ALL))
         var assignments: MutableList<Assignment> = mutableListOf(),
 
         @Id

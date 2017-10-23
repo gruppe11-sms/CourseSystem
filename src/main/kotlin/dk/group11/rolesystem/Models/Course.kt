@@ -15,13 +15,13 @@ data class Course(
         @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.ALL))
         var participant: MutableList<Participant> = mutableListOf(),
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL))
+        @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.ALL))
         var lessons: MutableList<Lesson> = mutableListOf(),
 
         @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.ALL))
         var assignment: MutableList<Assignment> = mutableListOf(),
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL))
+        @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.ALL))
         var courseEvaluations: MutableList<Evaluation> = mutableListOf(),
 
-        @Id @GeneratedValue(strategy = GenerationType.AUTO) @Column(name = "course_id") var id: Long = 0)
+        @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0)

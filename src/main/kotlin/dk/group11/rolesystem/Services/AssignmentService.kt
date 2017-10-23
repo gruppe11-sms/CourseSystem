@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 class AssignmentService(private val assignmentRepository: AssignmentRepository) {
 
     fun getAssignments(courseId: Long): Iterable<Assignment> {
-        return assignmentRepository.findByCourse_Id(courseId)
+        return assignmentRepository.findByCourseId(courseId)
     }
 
     fun getOneAssignment(assignmentId: Long): Assignment {

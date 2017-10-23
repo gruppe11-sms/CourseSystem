@@ -1,12 +1,15 @@
 package dk.group11.rolesystem.Models
 
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import com.fasterxml.jackson.annotation.JsonBackReference
+import javax.persistence.*
 
 @Entity
 data class Room(
-            var name: String = "",
-            var roomnr: Int = 0,
-            @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0)
+        var name: String = "",
+        var roomnr: Int = 0,
+
+        @ManyToOne
+        @JsonBackReference
+        var lesson: Lesson = Lesson(),
+
+        @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0)
