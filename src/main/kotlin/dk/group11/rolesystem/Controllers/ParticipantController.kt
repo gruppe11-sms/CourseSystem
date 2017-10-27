@@ -6,31 +6,30 @@ import dk.group11.rolesystem.Services.ParticipantService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-class ParticipantController(val participantService: ParticipantService, val courseService: CourseService) {
+@RequestMapping("/api/courses")
+class ParticipantController(private val participantService: ParticipantService, private val courseService: CourseService) {
 
-    @GetMapping("/api/courses/{courseId}/participants/{participantId}")
-    fun getParticipant(@PathVariable courseId: Long, @PathVariable participantId: Long): Participant {
-        return courseService.getCourseById(courseId).participant.first { participant ->
-            participant.id == participantId
+    @GetMapping("/participant/{participantId}")
+    fun getParticipant(@PathVariable participantId: Long): Participant {
+        return participantService.findParticipantById(participantId)
         }
-    }
 
-    @GetMapping("/api/courses/participants")
+    @GetMapping("/participant")
     fun getParticipants(): MutableIterable<Participant>? {
         return participantService.getAll()
     }
 
-    @GetMapping("/api/course/{courseId}/participants")
+    @GetMapping("/{courseId}/participant")
     fun getParticipantsForCourse(@PathVariable courseId: Long): MutableList<Participant> {
         return courseService.getCourseById(courseId).participant
     }
 
-    @PostMapping("/api/courses/{courseId}/participants")
+    @PostMapping("/{courseId}/participant")
     fun saveParticipant(@PathVariable courseId: Long, @RequestBody participant: Participant) {
         participantService.saveParticipant(courseId, participant)
     }
 
-    @PutMapping("/api/courses/{courseId}/participants/{participantId}")
+    @PutMapping("/{courseId}/participant/{participantId}")
     fun updateParticipant(@PathVariable participantId: Long, @RequestBody participant: Participant) {
         participantService.updateParticipant(participantId, participant)
     }

@@ -7,15 +7,16 @@ import dk.group11.rolesystem.Services.LessonService
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("/api/courses")
 class CourseLessonController(val lessonService: LessonService, val courseService: CourseService) {
 
 
-    @GetMapping("/api/courses/{courseId}/lessons")
+    @GetMapping("/{courseId}/lessons")
     fun getLessonsForCourse(@PathVariable courseId: Long): Iterable<Lesson> {
         return courseService.getCourseById(courseId).lessons
     }
 
-    @PostMapping("/api/courses/{courseId}/lessons")
+    @PostMapping("/{courseId}/lessons")
     fun addLesson(@PathVariable courseId: Long, @RequestBody lesson: Lesson) {
         val course: Course = courseService.getCourseById(courseId)
         course.lessons.add(lesson)

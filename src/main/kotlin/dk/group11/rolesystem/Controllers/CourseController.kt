@@ -5,34 +5,35 @@ import dk.group11.rolesystem.Services.CourseService
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("/api/courses")
 class CourseController(val courseService: CourseService) {
 
-    @GetMapping("/api")
+    @GetMapping("/test")
     fun sayHello(): String {
-        return "Hello"
+        return "Hello world"
     }
 
-    @GetMapping("/api/courses/{courseId}")
+    @GetMapping("/{courseId}")
     fun getCourseById(@PathVariable courseId: Long): Course {
         return courseService.getCourseById(courseId)
     }
 
-    @GetMapping("/api/courses")
+    @GetMapping
     fun getCourses(): Iterable<Course> {
         return courseService.getCourses()
     }
 
-    @PostMapping("/api/courses")
+    @PostMapping
     fun addCourse(@RequestBody course: Course) {
         return courseService.saveCourse(course)
     }
 
-    @PutMapping("/api/courses/{courseId}")
+    @PutMapping
     fun updateCourse(@RequestBody course : Course) {
         return courseService.saveCourse(course)
     }
 
-    @DeleteMapping("/api/courses/{id}")
+    @DeleteMapping
     fun deleteCourse(id : Long){
         return courseService.deleteCourse(id)
     }

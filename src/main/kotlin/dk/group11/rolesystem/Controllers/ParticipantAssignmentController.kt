@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*
 class ParticipantAssignmentController(private val participantService: ParticipantService,
                                       private val assignmentService: AssignmentService) {
 
-    @GetMapping("/api/courses/participants/{participantId}/assignments")
+    @GetMapping("/participant/{participantId}/assignments")
     fun getParticipantAssignments(@PathVariable participantId: Long): MutableList<Assignment> {
         return participantService.findParticipantById(participantId).assignments
     }
 
-    @PostMapping("/api/courses/participants/{participantId}/assignment")
+    @PostMapping("/api/courses/participant/{participantId}/assignment")
     fun saveAssignment(@PathVariable participantId: Long, @RequestBody assignment: Assignment) {
         val participant: Participant = participantService.findParticipantById(participantId)
         participant.assignments.add(assignment)

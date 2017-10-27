@@ -5,23 +5,24 @@ import dk.group11.rolesystem.Services.LessonService
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("/api/courses")
 class LessonController(val lessonService: LessonService) {
-    @GetMapping("/api/courses/lessons")
+    @GetMapping("/lessons")
     fun getLessons(): Iterable<Lesson> {
         return lessonService.findAllLessons()
     }
 
-    @GetMapping("/api/courses/lessons/{lessonId}")
+    @GetMapping("/lessons/{lessonId}")
     fun getLesson(@PathVariable lessonId: Long): Lesson {
         return lessonService.findOneLesson(lessonId)
     }
 
-    @PutMapping("/api/courses/{courseId}/lessons/{lessonId}")
+    @PutMapping("/{courseId}/lessons/{lessonId}")
     fun updateLesson(@RequestBody lesson: Lesson, @PathVariable lessonId: Long) {
         lessonService.updateLesson(lesson)
     }
 
-    @DeleteMapping("/api/courses/lessons/{lessonId}")
+    @DeleteMapping("/lessons/{lessonId}")
     fun deleteLesson(@PathVariable lessonId: Long) {
         lessonService.deleteLesson(lessonId)
     }

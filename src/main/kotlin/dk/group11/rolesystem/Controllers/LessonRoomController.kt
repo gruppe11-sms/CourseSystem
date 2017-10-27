@@ -7,14 +7,15 @@ import org.springframework.web.bind.annotation.*
 
 
 @RestController
+@RequestMapping("/api/courses")
 class LessonRoomController(val lessonService: LessonService,
                            val roomService: RoomService) {
-    @GetMapping("/api/courses/lessons/{lessonId}/rooms")
+    @GetMapping("/lessons/{lessonId}/rooms")
     fun getRooms(@PathVariable lessonId: Long): Iterable<Room> {
         return lessonService.findOneLesson(lessonId).room
     }
 
-    @PostMapping("/api/courses/lessons/{lessonId}/rooms")
+    @PostMapping("/lessons/{lessonId}/rooms")
     fun addRoom(@PathVariable lessonId: Long, @RequestBody room: Room) {
         val lesson = lessonService.findOneLesson(lessonId)
         lesson.room.add(room)

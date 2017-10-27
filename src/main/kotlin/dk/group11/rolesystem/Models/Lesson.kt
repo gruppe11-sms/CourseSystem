@@ -12,6 +12,8 @@ data class Lesson(
         @JsonBackReference
         var course: Course = Course(),
 
+        override val title: String = "",
+
         @OneToMany(mappedBy = "lesson", cascade = arrayOf(CascadeType.ALL))
         var room: MutableList<Room> = mutableListOf()
 ) : Activity()

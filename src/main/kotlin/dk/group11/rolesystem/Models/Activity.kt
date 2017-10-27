@@ -5,8 +5,8 @@ import javax.persistence.*
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-open class Activity {
-    val title: String = ""
+abstract class Activity {
+    abstract val title: String
     val startdate: Date = Date()
     val enddate: Date = Date()
     @Id

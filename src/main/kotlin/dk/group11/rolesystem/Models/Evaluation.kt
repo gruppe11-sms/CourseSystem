@@ -8,10 +8,6 @@ data class Evaluation(
         var grade: String = "",
         var feedback: String = "",
 
-        @OneToOne
-        @JsonBackReference
-        var assignment: Assignment = Assignment(),
-
         @ManyToOne
         @JsonBackReference
         var course: Course = Course(),

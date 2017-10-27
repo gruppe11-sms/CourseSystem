@@ -8,10 +8,10 @@ import javax.persistence.OneToMany
 
 @Entity
 data class Assignment  (
-        var description: String = "",
 
-        @OneToMany(mappedBy = "assignment", cascade = arrayOf(CascadeType.ALL))
-        var evaluations: MutableList<Evaluation> = mutableListOf(),
+        override val title: String = "",
+
+        var description: String = "",
 
         @ManyToOne
         @JsonBackReference
@@ -20,5 +20,4 @@ data class Assignment  (
         @ManyToOne
         @JsonBackReference
         var course: Course = Course()
-
 ) : Activity()
