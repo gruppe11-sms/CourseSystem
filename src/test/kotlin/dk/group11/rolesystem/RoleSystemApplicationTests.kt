@@ -1,4 +1,4 @@
-package dk.group11.rolesystem
+package dk.group11.coursesystem
 
 import org.junit.Test
 import org.junit.runner.RunWith
