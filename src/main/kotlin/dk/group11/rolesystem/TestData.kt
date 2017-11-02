@@ -1,7 +1,7 @@
 package dk.group11.rolesystem
 
-import dk.group11.rolesystem.Models.*
-import dk.group11.rolesystem.Repositories.*
+import dk.group11.rolesystem.models.*
+import dk.group11.rolesystem.repositories.*
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -40,6 +40,6 @@ class TestData(private val assignmentRepository: AssignmentRepository,
         val course = courseRepository.findByTitle("matematik")
         val participant = participantRepository.findAll()
 
-        course.participant.addAll(participant)
+        course.participants.addAll(participant)
     }
 }
