@@ -9,7 +9,6 @@ import javax.persistence.OneToMany
 @Entity
 data class Lesson(
         @ManyToOne
-        @JsonBackReference
         var course: Course = Course(),
 
         override val title: String = "",

@@ -8,6 +8,8 @@ import javax.persistence.*
 data class Course(
         var title: String = "",
 
+        var description: String = "",
+
         @DateTimeFormat(pattern = "dd/MM/yyyy")
         var startDate: Date = Date(),
         var endDate: Date = Date(),

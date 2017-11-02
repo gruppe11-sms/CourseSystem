@@ -14,10 +14,8 @@ data class Assignment  (
         var description: String = "",
 
         @ManyToOne
-        @JsonBackReference
         var participant: Participant = Participant(),
 
         @ManyToOne
-        @JsonBackReference
         var course: Course = Course()
 ) : Activity()

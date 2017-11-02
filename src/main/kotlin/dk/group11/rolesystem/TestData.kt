@@ -17,7 +17,7 @@ class TestData(private val assignmentRepository: AssignmentRepository,
     @Transactional
     override fun run(args: ApplicationArguments) {
         val testCourses: List<Course> = Arrays.asList(
-                Course("matematik", Date(), Date()))
+                Course("matematik","testdescription" , Date(), Date()))
 
         val testParticipants: List<Participant> = Arrays.asList(
                 Participant(0, course = testCourses.first()))

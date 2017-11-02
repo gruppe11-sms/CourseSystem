@@ -9,7 +9,6 @@ data class Evaluation(
         var feedback: String = "",
 
         @ManyToOne
-        @JsonBackReference
         var course: Course = Course(),
 
         @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0

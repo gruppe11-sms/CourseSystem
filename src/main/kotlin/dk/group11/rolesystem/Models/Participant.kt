@@ -8,7 +8,6 @@ data class Participant(
         var userId: Long = 0,
 
         @ManyToOne
-        @JsonBackReference
         var course: Course = Course(),
         
         @OneToMany(mappedBy = "participant", cascade = arrayOf(CascadeType.ALL))

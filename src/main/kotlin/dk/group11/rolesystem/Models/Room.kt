@@ -9,7 +9,6 @@ data class Room(
         var roomnr: Int = 0,
 
         @ManyToOne
-        @JsonBackReference
         var lesson: Lesson = Lesson(),
 
         @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0)
