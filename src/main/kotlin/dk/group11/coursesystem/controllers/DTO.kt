@@ -64,6 +64,8 @@ fun Assignment.toDTO(recursive: Boolean = true): AssignmentDTO {
 
     return AssignmentDTO(
             title = title,
+            startdate = startdate,
+            enddate = enddate,
             description = description,
             participant = participant
     )
@@ -120,6 +122,8 @@ data class LessonDTO(
 data class AssignmentDTO (
         val title: String = "",
         val description: String = "",
+        val startdate: Date = Date(),
+        val enddate: Date = Date(),
         val participant: ParticipantDTO =  ParticipantDTO()
 )
 

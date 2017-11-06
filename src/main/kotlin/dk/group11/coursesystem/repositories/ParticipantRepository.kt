@@ -4,6 +4,7 @@ import dk.group11.coursesystem.models.Participant
 import org.springframework.data.repository.CrudRepository
 
 interface ParticipantRepository : CrudRepository<Participant, Long> {
+    fun existsByUserId(userId: Int): Boolean
     fun findByUserId(userid: Long): Participant
     fun findByCourse_Id(Course_Id: Long)
 }

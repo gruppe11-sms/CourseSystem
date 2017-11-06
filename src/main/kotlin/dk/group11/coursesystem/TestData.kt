@@ -16,30 +16,39 @@ class TestData(private val assignmentRepository: AssignmentRepository,
                private val participantRepository: ParticipantRepository) : ApplicationRunner {
     @Transactional
     override fun run(args: ApplicationArguments) {
-        val testCourses: List<Course> = Arrays.asList(
-                Course("matematik","testdescription" , Date(), Date()))
+        if (!courseRepository.existsByTitle("matematik") &&
+                !participantRepository.existsByUserId(0) &&
+                !evaluationRepository.existsByGrade("12") &&
+                !lessonRepository.existsByTitle("Mat Lesson") &&
+                !assignmentRepository.existsByTitle("matematik")
+                ) {
 
-        val testParticipants: List<Participant> = Arrays.asList(
-                Participant(0, course = testCourses.first()))
 
-        val testEvaluations: List<Evaluation> = Arrays.asList(
-                Evaluation("12", "you did good", course = testCourses.first()))
+            val testCourses: List<Course> = Arrays.asList(
+                    Course("matematik", "testdescription", Date(), Date()))
 
-        val testAssignments: List<Assignment> = Arrays.asList(
-                Assignment("Matopgave3","Lav opgave 3 i matbogen", course = testCourses.first(), participant = testParticipants.first()))
+            val testParticipants: List<Participant> = Arrays.asList(
+                    Participant(0, course = testCourses.first()))
 
-        val testLessons: List<Lesson> = Arrays.asList(
-                Lesson(title= "Mat Lesson", course = testCourses.first()))
+            val testEvaluations: List<Evaluation> = Arrays.asList(
+                    Evaluation("12", "you did good", course = testCourses.first()))
 
-        courseRepository.save(testCourses)
-        participantRepository.save(testParticipants)
-        evaluationRepository.save(testEvaluations)
-        assignmentRepository.save(testAssignments)
-        lessonRepository.save(testLessons)
+            val testAssignments: List<Assignment> = Arrays.asList(
+                    Assignment("Matopgave3", "Lav opgave 3 i matbogen", course = testCourses.first(), participant = testParticipants.first()))
 
-        val course = courseRepository.findByTitle("matematik")
-        val participant = participantRepository.findAll()
+            val testLessons: List<Lesson> = Arrays.asList(
+                    Lesson(title = "Mat Lesson", course = testCourses.first()))
 
-        course.participants.addAll(participant)
+            courseRepository.save(testCourses)
+            participantRepository.save(testParticipants)
+            evaluationRepository.save(testEvaluations)
+            assignmentRepository.save(testAssignments)
+            lessonRepository.save(testLessons)
+
+            val course = courseRepository.findByTitle("matematik")
+            val participant = participantRepository.findAll()
+
+            course.participants.addAll(participant)
+        }
     }
 }
