@@ -15,11 +15,6 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository) 
         return assignmentRepository.findOne(assignmentId)
     }
 
-    fun addAssignment(courseId: Long, assignment: Assignment) {
-        assignment.course.id = courseId
-        assignmentRepository.save(assignment)
-
-    }
 
     fun updateAssignment(assignmentId: Long, assignment: Assignment): String {
         if (assignmentRepository.exists(assignmentId) && assignment.id == assignmentId)

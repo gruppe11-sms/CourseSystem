@@ -58,16 +58,16 @@ fun Lesson.toDTO(recursive: Boolean = true): LessonDTO {
 
 fun Assignment.toDTO(recursive: Boolean = true): AssignmentDTO {
 
-    val participant = if (recursive)
-        participant.toDTO(false)
-    else ParticipantDTO()
+    val participants = if (recursive)
+        participants.map { it.toDTO(false) }
+    else emptyList()
 
     return AssignmentDTO(
             title = title,
             startdate = startdate,
             enddate = enddate,
             description = description,
-            participant = participant
+            participant = participants
     )
 }
 
@@ -124,7 +124,7 @@ data class AssignmentDTO (
         val description: String = "",
         val startdate: Date = Date(),
         val enddate: Date = Date(),
-        val participant: ParticipantDTO =  ParticipantDTO()
+        val participant: List<ParticipantDTO> =  emptyList()
 )
 
 data class RoomDTO (

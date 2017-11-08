@@ -34,7 +34,7 @@ class TestData(private val assignmentRepository: AssignmentRepository,
                     Evaluation("12", "you did good", course = testCourses.first()))
 
             val testAssignments: List<Assignment> = Arrays.asList(
-                    Assignment("Matopgave3", "Lav opgave 3 i matbogen", course = testCourses.first(), participant = testParticipants.first()))
+                    Assignment("Matopgave3", "Lav opgave 3 i matbogen", course = testCourses.first(), participants = testParticipants as MutableList<Participant>))
 
             val testLessons: List<Lesson> = Arrays.asList(
                     Lesson(title = "Mat Lesson", course = testCourses.first()))

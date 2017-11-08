@@ -8,12 +8,12 @@ data class Participant(
 
         @ManyToOne
         var course: Course = Course(),
-        
-        @OneToMany(mappedBy = "participant", cascade = arrayOf(CascadeType.ALL))
+
+        @ManyToMany(cascade = arrayOf(CascadeType.ALL))
+        @JoinColumn
         var assignments: MutableList<Assignment> = mutableListOf(),
 
         @Id
         @GeneratedValue(strategy = GenerationType.AUTO)
-        @Column(name = "participant_id")
         var id: Long = 0
 )

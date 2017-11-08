@@ -28,10 +28,7 @@ class AssignmentController(val assignmentService: AssignmentService) {
         assignmentService.deleteAssignment(assignmentId)
     }
 
-    @PostMapping("/{courseId}/assignments")
-    fun saveAssignment(@PathVariable courseId: Long, @RequestBody assignment: Assignment) {
-        assignmentService.addAssignment(courseId, assignment)
-    }
+
 
     @PutMapping("/{courseId}/assignments/{assignmentId}")
     fun updateAssignment(@PathVariable assignmentId: Long, @RequestBody assignment: Assignment) {
