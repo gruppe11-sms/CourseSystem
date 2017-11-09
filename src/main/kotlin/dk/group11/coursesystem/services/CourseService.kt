@@ -1,9 +1,11 @@
 package dk.group11.coursesystem.services
 
+import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.models.Lesson
 import dk.group11.coursesystem.repositories.CourseRepository
 import org.springframework.stereotype.Service
+import java.util.function.Consumer
 
 @Service
 class CourseService(
@@ -11,7 +13,10 @@ class CourseService(
 ) {
 
     fun getCourseById(courseId: Long): Course {
-        return courseRepo.findOne(courseId)
+        if (courseRepo.exists(courseId)) {
+            return courseRepo.findOne(courseId)
+        }
+        else return error("course doesn't exist")
     }
 
     fun getCourses(): Iterable<Course> {

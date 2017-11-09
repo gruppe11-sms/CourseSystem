@@ -1,7 +1,6 @@
 package dk.group11.coursesystem.models
 
-import javax.persistence.Entity
-import javax.persistence.ManyToOne
+import javax.persistence.*
 
 @Entity
 data class Assignment  (
@@ -10,9 +9,11 @@ data class Assignment  (
 
         var description: String = "",
 
-        @ManyToOne
-        var participant: Participant = Participant(),
+        @ManyToMany(mappedBy = "assignments", cascade = arrayOf(CascadeType.ALL))
+        var participants: MutableList<Participant> = mutableListOf(),
 
-        @ManyToOne
+        @ManyToOne(cascade = arrayOf(CascadeType.ALL))
+        @JoinColumn
         var course: Course = Course()
+
 ) : Activity()
