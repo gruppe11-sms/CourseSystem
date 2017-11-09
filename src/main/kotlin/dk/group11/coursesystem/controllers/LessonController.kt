@@ -1,25 +1,36 @@
 package dk.group11.coursesystem.controllers
 
+import dk.group11.coursesystem.exceptions.BadRequestException
+import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.models.Lesson
 import dk.group11.coursesystem.services.LessonService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/api/courses/{courseId}")
 class LessonController(val lessonService: LessonService) {
+
     @GetMapping("/lessons")
-    fun getLessons(): Iterable<LessonDTO> {
-        return lessonService.findAllLessons().map { it.toDTO() }
+    fun getLessonsForCourse(@PathVariable courseId: Long): Iterable<LessonDTO> {
+        return lessonService.getLessons(courseId).map { it.toDTO() }
+    }
+
+    @PostMapping("/lessons")
+    fun addLesson(@PathVariable courseId: Long, @RequestBody lesson: Lesson): LessonDTO {
+        return lessonService.createLesson(lesson, courseId).toDTO(false)
     }
 
     @GetMapping("/lessons/{lessonId}")
     fun getLesson(@PathVariable lessonId: Long): LessonDTO {
-        return lessonService.findOneLesson(lessonId).toDTO()
+        return lessonService.getLesson(lessonId).toDTO()
     }
 
-    @PutMapping("/{courseId}/lessons/{lessonId}")
-    fun updateLesson(@RequestBody lesson: Lesson, @PathVariable lessonId: Long) {
-        lessonService.updateLesson(lesson)
+    @PutMapping("/lessons/{lessonId}")
+    fun updateLesson(@RequestBody lesson: Lesson, @PathVariable lessonId: Long): LessonDTO {
+        if (lesson.id != lessonId) {
+            throw BadRequestException("Lesson id attempted update does not match lessonId URL")
+        }
+        return lessonService.updateLesson(lesson).toDTO(false)
     }
 
     @DeleteMapping("/lessons/{lessonId}")
