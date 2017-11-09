@@ -14,6 +14,6 @@ data class Assignment  (
 
         @ManyToOne(cascade = arrayOf(CascadeType.ALL))
         @JoinColumn
-        var course: Course = Course(title = "ghost")
+        var course: Course = Course()
 
 ) : Activity()

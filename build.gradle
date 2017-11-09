@@ -30,10 +30,13 @@ compileTestKotlin {
 
 repositories {
 	mavenCentral()
+	jcenter()
 }
 
 
 dependencies {
+	compile 'com.github.kittinunf.fuel:fuel:1.11.0'
+	compile 'com.github.kittinunf.fuel:fuel-gson:1.11.0'
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-jdbc')
 	compile('org.springframework.boot:spring-boot-starter-web')
@@ -42,6 +45,8 @@ dependencies {
 	compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.8.0'
 	compile('org.springframework.boot:spring-boot-starter-security')
+
 	runtime('org.postgresql:postgresql')
+
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
