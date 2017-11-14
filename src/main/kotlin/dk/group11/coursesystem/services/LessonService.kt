@@ -9,7 +9,7 @@ import dk.group11.coursesystem.repositories.LessonRepository
 import dk.group11.coursesystem.security.SecurityService
 import org.springframework.stereotype.Service
 
-data class createLessonAuditEntry(val lesson : Lesson, val courseId: Long)
+data class createLessonAuditEntry(val lesson: LessonDTO, val courseId: Long)
 data class updateLessonAuditEntry(val before: LessonDTO, val after: Lesson)
 data class deleteLessonAuditEntry(val deleted: LessonDTO, val lessonId: Long)
 @Service
@@ -20,10 +20,11 @@ class LessonService(
         val securityService: SecurityService) {
 
     fun createLesson(lesson: Lesson, courseId: Long): Lesson{
-        auditClient.createEntry("[CourseSystem] Create Lesson",createLessonAuditEntry(lesson,courseId),securityService.getToken())
         val course = courseRepository.findOne(courseId)
         lesson.course = course
-        return lessonRepository.save(lesson)
+        lessonRepository.save(lesson)
+        auditClient.createEntry("[CourseSystem] Create Lesson", createLessonAuditEntry(lesson.toDTO(true), courseId), securityService.getToken())
+        return lesson
 
     }
 
