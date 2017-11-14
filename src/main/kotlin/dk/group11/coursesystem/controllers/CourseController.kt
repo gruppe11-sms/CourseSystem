@@ -24,15 +24,16 @@ class CourseController(val courseService: CourseService) {
     }
 
     @PostMapping
-    fun addCourse(@RequestBody course: Course) {
+    fun addCourse(@RequestBody course: Course): CourseDTO {
         println("receiving a course" + course)
-        return courseService.saveCourse(course)
+        return courseService.createCourse(course).toDTO()
     }
 
+
     @PutMapping("/{courseId}")
-    fun updateCourse(@PathVariable courseId: Long, @RequestBody course : Course) {
+    fun updateCourse(@PathVariable courseId: Long, @RequestBody course: Course): CourseDTO {
         println("receiving a course" + course + "and pathvariable" + courseId)
-        return courseService.saveCourse(course)
+        return courseService.updateCourse(course).toDTO()
     }
 
     @DeleteMapping

@@ -19,6 +19,6 @@ class CourseEvaluationController(private val courseService: CourseService) {
     fun addCourseEvaluation(@PathVariable courseId: Long, @RequestBody evaluation: Evaluation) {
         val course: Course = courseService.getCourseById(courseId)
         course.evaluations.add(evaluation)
-        courseService.saveCourse(course)
+        courseService.updateCourse(course)
     }
 }
