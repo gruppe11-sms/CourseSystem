@@ -5,6 +5,6 @@ import org.springframework.data.repository.CrudRepository
 
 interface ParticipantRepository : CrudRepository<Participant, Long> {
     fun existsByUserId(userId: Long): Boolean
-    fun findByUserId(userid: Long): Participant
+    fun findByUserId(userid: Long): Iterable<Participant>
     fun findByCourse_Id(Course_Id: Long)
 }
