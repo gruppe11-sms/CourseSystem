@@ -1,9 +1,11 @@
 package dk.group11.coursesystem.auditClient
 
+import dk.group11.coursesystem.controllers.AssignmentDTO
+import dk.group11.coursesystem.controllers.toDTO
 import dk.group11.coursesystem.models.Assignment
 import java.util.*
 
-data class AssignmentAuditEntry(val title: String,  val description: String, val courseID: Long, val startDate: Date, val endDate: Date, val assignmentID: Long)
+data class AssignmentAuditEntry(val assignment: AssignmentDTO, val courseId: Long)
 
 fun Assignment.toAuditEntry():
-    AssignmentAuditEntry = AssignmentAuditEntry(title = this.title, description = this.description, courseID = this.course.id, startDate = this.startdate, endDate = this.enddate, assignmentID = this.id)
+    AssignmentAuditEntry = AssignmentAuditEntry(assignment = this.toDTO(),courseId = this.course.id)
