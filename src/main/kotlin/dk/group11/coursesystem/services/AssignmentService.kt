@@ -1,6 +1,5 @@
 package dk.group11.coursesystem.services
 
-import dk.group11.coursesystem.auditClient.AssignmentAuditEntry
 import dk.group11.coursesystem.auditClient.AuditClient
 import dk.group11.coursesystem.auditClient.toAuditEntry
 import dk.group11.coursesystem.exceptions.BadRequestException
@@ -48,9 +47,14 @@ class AssignmentService(
 
     fun createAssignment(courseId: Long, assignment: Assignment) : Assignment {
         val course = courseRepository.findOne(courseId)
+        assignment.course = course
+
+//        courseRepository.save(course)
+        assignmentRepository.save(assignment)
+        assignment.participants.addAll(course.participants)
+
         course.participants.forEach { it.assignments.add(assignment) }
         course.assignments.add(assignment)
-        assignment.course = course
         courseRepository.save(course)
 
         auditClient.createEntry("[CourseSystem] Assignment created", assignment.toAuditEntry(), security.getToken())

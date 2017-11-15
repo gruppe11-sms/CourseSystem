@@ -29,12 +29,12 @@ class AssignmentController(val assignmentService: AssignmentService) {
     }
 
     @PostMapping("{courseId}/assignments")
-    fun createAssignment(@PathVariable courseId: Long, @RequestBody assignment: Assignment) {
-        assignmentService.createAssignment(courseId, assignment)
+    fun createAssignment(@PathVariable courseId: Long, @RequestBody assignment: Assignment): AssignmentDTO {
+        return assignmentService.createAssignment(courseId, assignment).toDTO(false)
     }
 
     @PutMapping("{courseId}/assignments/{assignmentId}")
-    fun updateAssignment(@PathVariable assignmentId: Long, @RequestBody assignment: Assignment) {
-        assignmentService.updateAssignment(assignmentId, assignment)
+    fun updateAssignment(@PathVariable assignmentId: Long, @RequestBody assignment: Assignment): AssignmentDTO {
+        return assignmentService.updateAssignment(assignmentId, assignment).toDTO(false)
     }
 }
