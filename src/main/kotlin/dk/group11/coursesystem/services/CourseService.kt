@@ -31,7 +31,6 @@ class CourseService(
         auditClient.createEntry("[CourseSystem] Get All Courses", "")
         //The optimal solution for this implementation would be to ask the rolesystem for what type of user is currently logged in,
         // and we would have returned the specific courses depending on the logged in type of user. (admin/normal user etc.
-        //
         //return participantRepository
         //       .findByUserId(securityService.getId())
         //     .map { it.course }

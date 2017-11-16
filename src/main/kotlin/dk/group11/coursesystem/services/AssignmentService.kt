@@ -1,6 +1,5 @@
 package dk.group11.coursesystem.services
 
-import dk.group11.coursesystem.auditClient.AssignmentAuditEntry
 import dk.group11.coursesystem.auditClient.AuditClient
 import dk.group11.coursesystem.auditClient.toAuditEntry
 import dk.group11.coursesystem.models.Assignment

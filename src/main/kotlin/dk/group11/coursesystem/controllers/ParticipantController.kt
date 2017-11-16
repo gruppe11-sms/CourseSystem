@@ -15,6 +15,11 @@ class ParticipantController(private val participantService: ParticipantService,
         return participantService.findParticipantById(participantId).toDTO()
     }
 
+    @GetMapping("/participants/user/{userId}")
+    fun getParticipantsByUserId(@PathVariable userId: Long): List<ParticipantDTO>{
+        return participantService.findParticpantsByUserId(userId).map { it.toDTO() }
+    }
+
     @GetMapping("/participants")
     fun getParticipants(): Iterable<ParticipantDTO> {
         return participantService.getAll().map { it.toDTO() }

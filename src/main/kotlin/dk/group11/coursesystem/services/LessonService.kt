@@ -19,7 +19,7 @@ class LessonService(
         val auditClient: AuditClient,
         val securityService: SecurityService) {
 
-    fun createLesson(lesson: Lesson, courseId: Long): Lesson{
+    fun createLesson(lesson: Lesson, courseId: Long): Lesson {
         val course = courseRepository.findOne(courseId)
         lesson.course = course
         lessonRepository.save(lesson)
@@ -28,29 +28,28 @@ class LessonService(
 
     }
 
-    fun getLesson(lessonId: Long): Lesson{
-        auditClient.createEntry("[CourseSystem] Get Lesson",lessonId,securityService.getToken())
+    fun getLesson(lessonId: Long): Lesson {
+        auditClient.createEntry("[CourseSystem] Get Lesson", lessonId, securityService.getToken())
         return lessonRepository.findOne(lessonId)
     }
 
     fun updateLesson(lesson: Lesson): Lesson {
         val current = lessonRepository.findOne(lesson.id)
-        auditClient.createEntry("[CourseSystem] Update Lesson", updateLessonAuditEntry(current.toDTO(false), lesson),securityService.getToken())
+        auditClient.createEntry("[CourseSystem] Update Lesson", updateLessonAuditEntry(current.toDTO(false), lesson), securityService.getToken())
         return lessonRepository.save(lesson)
 
     }
 
-    fun deleteLesson(lessonId: Long){
+    fun deleteLesson(lessonId: Long) {
         val deleted = lessonRepository.findOne(lessonId)
-        auditClient.createEntry("[CourseSystem] Delete Lesson", deleteLessonAuditEntry(deleted.toDTO(false),lessonId),securityService.getToken())
+        auditClient.createEntry("[CourseSystem] Delete Lesson", deleteLessonAuditEntry(deleted.toDTO(false), lessonId), securityService.getToken())
         lessonRepository.delete(lessonId)
     }
 
     fun getLessons(courseId: Long): List<Lesson> {
-        auditClient.createEntry("[CourseSystem] Get Lessons for Course",courseId,securityService.getToken())
+        auditClient.createEntry("[CourseSystem] Get Lessons for Course", courseId, securityService.getToken())
         return courseRepository.findOne(courseId).lessons
     }
-
 
 
 }

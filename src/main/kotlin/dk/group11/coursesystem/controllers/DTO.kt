@@ -5,21 +5,21 @@ import java.util.*
 
 fun Course.toDTO(recursive: Boolean = true): CourseDTO {
     //needs refactoring to participants as it is a list should happen in the course model
-        val participants = if (recursive)
-            participants.map { it.toDTO(false) }
-        else emptyList()
+    val participants = if (recursive)
+        participants.map { it.toDTO(false) }
+    else emptyList()
 
-        val lessons = if (recursive)
-            lessons.map { it.toDTO(false) }
-        else emptyList()
+    val lessons = if (recursive)
+        lessons.map { it.toDTO(false) }
+    else emptyList()
 
-        val assignments = if (recursive)
-            assignments.map { it.toDTO(false) }
-        else emptyList()
+    val assignments = if (recursive)
+        assignments.map { it.toDTO(false) }
+    else emptyList()
 
-        val evaluations = if (recursive)
-            evaluations.map { it.toDTO(false) }
-        else emptyList()
+    val evaluations = if (recursive)
+        evaluations.map { it.toDTO(false) }
+    else emptyList()
 
     return CourseDTO(
             id = id,
@@ -66,9 +66,8 @@ fun Assignment.toDTO(recursive: Boolean = true): AssignmentDTO {
     else emptyList()
 
     return AssignmentDTO(
-            title = title,
-            startdate = startdate,
-            enddate = enddate,
+            id = id,
+            activityId = activityId,
             description = description,
             participant = participants
     )
@@ -105,13 +104,14 @@ data class CourseDTO(
         val assignments: List<AssignmentDTO> = emptyList(),
         val evaluations: List<EvaluationDTO> = emptyList()
 )
+
 data class ParticipantDTO(
         val id: Long = 0,
         val userId: Long = 0,
         val assignments: List<AssignmentDTO> = emptyList()
-        )
+)
 
-data class EvaluationDTO (
+data class EvaluationDTO(
         val id: Long = 0,
         val grade: String = "",
         val feedback: String = ""
@@ -126,15 +126,14 @@ data class LessonDTO(
 
 )
 
-data class AssignmentDTO (
-        val title: String = "",
+data class AssignmentDTO(
+        val id: Long = 0,
+        val activityId: Long = 0,
         val description: String = "",
-        val startdate: Date = Date(),
-        val enddate: Date = Date(),
-        val participant: List<ParticipantDTO> =  emptyList()
+        val participant: List<ParticipantDTO> = emptyList()
 )
 
-data class RoomDTO (
+data class RoomDTO(
         val name: String = "",
         val roomNr: Int = 0,
         val lesson: LessonDTO = LessonDTO(0, "", emptyList(), Date(), Date()),

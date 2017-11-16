@@ -1,17 +1,18 @@
 package dk.group11.coursesystem.models
 
-import javax.persistence.CascadeType
-import javax.persistence.Entity
-import javax.persistence.ManyToOne
-import javax.persistence.OneToMany
+import javax.persistence.*
 
 @Entity
 data class Lesson(
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        var id: Long = 0,
+
+        var activityId: Long = 0,
+
         @ManyToOne
         var course: Course = Course(),
 
-        override val title: String = "",
-
         @OneToMany(mappedBy = "lesson", cascade = arrayOf(CascadeType.ALL))
         var room: MutableList<Room> = mutableListOf()
-) : Activity()
+)

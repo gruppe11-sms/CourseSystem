@@ -37,7 +37,7 @@ class CourseController(val courseService: CourseService) {
     }
 
     @DeleteMapping
-    fun deleteCourse(id : Long){
+    fun deleteCourse(id: Long) {
         return courseService.deleteCourse(id)
     }
 }

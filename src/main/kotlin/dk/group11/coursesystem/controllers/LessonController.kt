@@ -1,7 +1,6 @@
 package dk.group11.coursesystem.controllers
 
 import dk.group11.coursesystem.exceptions.BadRequestException
-import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.models.Lesson
 import dk.group11.coursesystem.services.LessonService
 import org.springframework.web.bind.annotation.*
