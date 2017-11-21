@@ -5,6 +5,7 @@ import dk.group11.coursesystem.auditClient.toAuditEntry
 import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
+import dk.group11.coursesystem.repositories.ParticipantRepository
 import dk.group11.coursesystem.security.ISecurityService
 import org.springframework.stereotype.Service
 
@@ -13,7 +14,8 @@ class AssignmentService(
         private val assignmentRepository: AssignmentRepository,
         private val courseRepository: CourseRepository,
         private val auditClient: AuditClient,
-        private val security: ISecurityService
+        private val security: ISecurityService,
+        private val participantRepository: ParticipantRepository
 ) {
 
     fun getAssignments(courseId: Long): Iterable<Assignment> {
@@ -50,6 +52,10 @@ class AssignmentService(
 
         auditClient.createEntry("[CourseSystem] Assignment created", assignment.toAuditEntry(), security.getToken())
 
+    }
+
+    fun getAssigmentsByUserId(id: Long): List<Assignment> {
+        return participantRepository.findByUserId(id).flatMap { it.assignments }
     }
 
 }

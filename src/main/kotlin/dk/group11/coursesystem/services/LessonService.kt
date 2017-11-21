@@ -4,8 +4,10 @@ import dk.group11.coursesystem.auditClient.AuditClient
 import dk.group11.coursesystem.controllers.LessonDTO
 import dk.group11.coursesystem.controllers.toDTO
 import dk.group11.coursesystem.models.Lesson
+import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.LessonRepository
+import dk.group11.coursesystem.repositories.ParticipantRepository
 import dk.group11.coursesystem.security.SecurityService
 import org.springframework.stereotype.Service
 
@@ -17,7 +19,8 @@ class LessonService(
         val lessonRepository: LessonRepository,
         val courseRepository: CourseRepository,
         val auditClient: AuditClient,
-        val securityService: SecurityService) {
+        val securityService: SecurityService,
+        val participantRepository: ParticipantRepository) {
 
     fun createLesson(lesson: Lesson, courseId: Long): Lesson {
         val course = courseRepository.findOne(courseId)
@@ -26,6 +29,11 @@ class LessonService(
         auditClient.createEntry("[CourseSystem] Create Lesson", createLessonAuditEntry(lesson.toDTO(true), courseId), securityService.getToken())
         return lesson
 
+    }
+
+    fun getLessonsByUserId(userId:Long): List<Lesson>{
+        val participants = participantRepository.findByUserId(userId)
+        return participants.map { it.course }.flatMap { it.lessons }
     }
 
     fun getLesson(lessonId: Long): Lesson {
