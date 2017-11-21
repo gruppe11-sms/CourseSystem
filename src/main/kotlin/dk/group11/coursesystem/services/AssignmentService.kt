@@ -8,25 +8,30 @@ import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
 import dk.group11.coursesystem.security.ISecurityService
+import dk.group11.file.services.storage.FileService
+import dk.group11.file.services.storage.IFileService
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import java.io.File
 
 @Service
 class AssignmentService(
         private val assignmentRepository: AssignmentRepository,
         private val courseRepository: CourseRepository,
         private val auditClient: AuditClient,
-        private val security: ISecurityService,
-        private val participantRepository: ParticipantRepository
+        //private val security: ISecurityService,
+        private val participantRepository: ParticipantRepository,
+        private val fileService: FileService
 ) {
 
     fun getAssignments(courseId: Long): Iterable<Assignment> {
         val course = courseRepository.findOne(courseId)
-        auditClient.createEntry("[CourseSystem] See all assignments",course.assignments.map { it.toAuditEntry() } , security.getToken())
+        auditClient.createEntry("[CourseSystem] See all assignments", course.assignments.map { it.toAuditEntry() })
         return course.assignments
     }
 
     fun getOneAssignment(assignmentId: Long): Assignment {
-        auditClient.createEntry("[CourseSystem] See one assignment", assignmentId, security.getToken())
+        auditClient.createEntry("[CourseSystem] See one assignment", assignmentId)
         return assignmentRepository.findOne(assignmentId)
     }
 
@@ -47,7 +52,7 @@ class AssignmentService(
         return assignmentRepository.findAll()
     }
 
-    fun createAssignment(courseId: Long, assignment: Assignment) : Assignment {
+    fun createAssignment(courseId: Long, assignment: Assignment): Assignment {
         val course = courseRepository.findOne(courseId)
         assignment.course = course
 
@@ -59,8 +64,13 @@ class AssignmentService(
         course.assignments.add(assignment)
         courseRepository.save(course)
 
-        auditClient.createEntry("[CourseSystem] Assignment created", assignment.toAuditEntry(), security.getToken())
+        auditClient.createEntry("[CourseSystem] Assignment created", assignment.toAuditEntry())
         return assignment
+    }
+
+    fun uploadAssignment(assignmentId: Long, file: MultipartFile) {
+        auditClient.createEntry("[CourseSystem] Assignment uploaded", file)
+        fileService.storeFile(file)
     }
 
     fun getAssigmentsByUserId(id: Long): List<Assignment> {
