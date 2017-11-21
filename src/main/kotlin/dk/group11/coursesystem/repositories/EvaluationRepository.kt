@@ -4,7 +4,7 @@ import dk.group11.coursesystem.models.Evaluation
 import org.springframework.data.repository.CrudRepository
 
 
-interface EvaluationRepository : CrudRepository<Evaluation,Long> {
+interface EvaluationRepository : CrudRepository<Evaluation, Long> {
 
     fun existsByGrade(grade: String): Boolean
 

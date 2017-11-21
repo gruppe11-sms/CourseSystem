@@ -39,7 +39,7 @@ class CourseController(val courseService: CourseService, private val securitySer
     }
 
     @DeleteMapping
-    fun deleteCourse(id : Long){
+    fun deleteCourse(id: Long) {
         securityService.requireRoles(CourseManagementRole)
         return courseService.deleteCourse(id)
     }

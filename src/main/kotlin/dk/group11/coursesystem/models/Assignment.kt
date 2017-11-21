@@ -3,9 +3,12 @@ package dk.group11.coursesystem.models
 import javax.persistence.*
 
 @Entity
-data class Assignment  (
+data class Assignment(
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        var id: Long = 0,
 
-        override val title: String = "",
+        var activityId: Long = 0,
 
         var description: String = "",
 
@@ -16,4 +19,4 @@ data class Assignment  (
         @JoinColumn
         var course: Course = Course()
 
-) : Activity()
+)

@@ -4,8 +4,10 @@ import dk.group11.coursesystem.clients.AuditClient
 import dk.group11.coursesystem.controllers.LessonDTO
 import dk.group11.coursesystem.controllers.toDTO
 import dk.group11.coursesystem.models.Lesson
+import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.LessonRepository
+import dk.group11.coursesystem.repositories.ParticipantRepository
 import dk.group11.coursesystem.security.SecurityService
 import org.springframework.stereotype.Service
 
@@ -17,9 +19,10 @@ class LessonService(
         val lessonRepository: LessonRepository,
         val courseRepository: CourseRepository,
         val auditClient: AuditClient,
-        val securityService: SecurityService) {
+        val securityService: SecurityService,
+        val participantRepository: ParticipantRepository) {
 
-    fun createLesson(lesson: Lesson, courseId: Long): Lesson{
+    fun createLesson(lesson: Lesson, courseId: Long): Lesson {
         val course = courseRepository.findOne(courseId)
         lesson.course = course
         lessonRepository.save(lesson)
@@ -28,29 +31,33 @@ class LessonService(
 
     }
 
-    fun getLesson(lessonId: Long): Lesson{
-        auditClient.createEntry("[CourseSystem] Get Lesson",lessonId,securityService.getToken())
+    fun getLessonsByUserId(userId:Long): List<Lesson>{
+        val participants = participantRepository.findByUserId(userId)
+        return participants.map { it.course }.flatMap { it.lessons }
+    }
+
+    fun getLesson(lessonId: Long): Lesson {
+        auditClient.createEntry("[CourseSystem] Get Lesson", lessonId, securityService.getToken())
         return lessonRepository.findOne(lessonId)
     }
 
     fun updateLesson(lesson: Lesson): Lesson {
         val current = lessonRepository.findOne(lesson.id)
-        auditClient.createEntry("[CourseSystem] Update Lesson", updateLessonAuditEntry(current.toDTO(false), lesson),securityService.getToken())
+        auditClient.createEntry("[CourseSystem] Update Lesson", updateLessonAuditEntry(current.toDTO(false), lesson), securityService.getToken())
         return lessonRepository.save(lesson)
 
     }
 
-    fun deleteLesson(lessonId: Long){
+    fun deleteLesson(lessonId: Long) {
         val deleted = lessonRepository.findOne(lessonId)
-        auditClient.createEntry("[CourseSystem] Delete Lesson", deleteLessonAuditEntry(deleted.toDTO(false),lessonId),securityService.getToken())
+        auditClient.createEntry("[CourseSystem] Delete Lesson", deleteLessonAuditEntry(deleted.toDTO(false), lessonId), securityService.getToken())
         lessonRepository.delete(lessonId)
     }
 
     fun getLessons(courseId: Long): List<Lesson> {
-        auditClient.createEntry("[CourseSystem] Get Lessons for Course",courseId,securityService.getToken())
+        auditClient.createEntry("[CourseSystem] Get Lessons for Course", courseId, securityService.getToken())
         return courseRepository.findOne(courseId).lessons
     }
-
 
 
 }

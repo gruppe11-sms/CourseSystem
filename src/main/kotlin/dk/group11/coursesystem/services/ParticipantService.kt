@@ -12,6 +12,10 @@ class ParticipantService(val participantRepository: ParticipantRepository) {
         participantRepository.save(participant)
     }
 
+    fun findParticpantsByUserId(id:Long) : List<Participant>{
+        return participantRepository.findByUserId(id).toList()
+    }
+
     fun findParticipantById(participantId: Long): Participant {
         return participantRepository.findOne(participantId)
     }

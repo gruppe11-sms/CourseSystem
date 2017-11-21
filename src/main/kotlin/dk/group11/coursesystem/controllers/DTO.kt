@@ -5,21 +5,21 @@ import java.util.*
 
 fun Course.toDTO(recursive: Boolean = true): CourseDTO {
     //needs refactoring to participants as it is a list should happen in the course model
-        val participants = if (recursive)
-            participants.map { it.toDTO(false) }
-        else emptyList()
+    val participants = if (recursive)
+        participants.map { it.toDTO(false) }
+    else emptyList()
 
-        val lessons = if (recursive)
-            lessons.map { it.toDTO(false) }
-        else emptyList()
+    val lessons = if (recursive)
+        lessons.map { it.toDTO(false) }
+    else emptyList()
 
-        val assignments = if (recursive)
-            assignments.map { it.toDTO(false) }
-        else emptyList()
+    val assignments = if (recursive)
+        assignments.map { it.toDTO(false) }
+    else emptyList()
 
-        val evaluations = if (recursive)
-            evaluations.map { it.toDTO(false) }
-        else emptyList()
+    val evaluations = if (recursive)
+        evaluations.map { it.toDTO() }
+    else emptyList()
 
     return CourseDTO(
             id = id,
@@ -52,10 +52,9 @@ fun Lesson.toDTO(recursive: Boolean = true): LessonDTO {
 
     return LessonDTO(
             id = id,
-            title = title,
-            rooms = rooms,
-            startDate = startdate,
-            endDate = enddate
+            activityId = activityId,
+            rooms = rooms
+
     )
 }
 
@@ -67,15 +66,13 @@ fun Assignment.toDTO(recursive: Boolean = true): AssignmentDTO {
 
     return AssignmentDTO(
             id = id,
-            title = title,
-            startdate = startdate,
-            enddate = enddate,
+            activityId = activityId,
             description = description,
             participant = participants
     )
 }
 
-fun Evaluation.toDTO(recursive: Boolean = true): EvaluationDTO {
+fun Evaluation.toDTO(): EvaluationDTO {
     return EvaluationDTO(
             id = id,
             grade = grade,
@@ -86,7 +83,7 @@ fun Evaluation.toDTO(recursive: Boolean = true): EvaluationDTO {
 fun Room.toDTO(recursive: Boolean = true): RoomDTO {
     val lesson = if (recursive)
         lesson.toDTO()
-    else LessonDTO(0, "", emptyList(), Date(), Date())
+    else LessonDTO()
 
     return RoomDTO(
             name = name,
@@ -106,40 +103,35 @@ data class CourseDTO(
         val assignments: List<AssignmentDTO> = emptyList(),
         val evaluations: List<EvaluationDTO> = emptyList()
 )
+
 data class ParticipantDTO(
         val id: Long = 0,
         val userId: Long = 0,
         val assignments: List<AssignmentDTO> = emptyList()
-        )
+)
 
-data class EvaluationDTO (
+data class EvaluationDTO(
         val id: Long = 0,
         val grade: String = "",
         val feedback: String = ""
 )
 
 data class LessonDTO(
-        val id: Long,
-        val title: String,
-        val rooms: List<RoomDTO>,
-        val startDate: Date,
-        val endDate: Date
-
-)
-
-data class AssignmentDTO (
         val id: Long = 0,
-        val title: String = "",
-        val description: String = "",
-        val startdate: Date = Date(),
-        val enddate: Date = Date(),
-        val participant: List<ParticipantDTO> =  emptyList()
+        val activityId: Long = 0,
+        val rooms: List<RoomDTO> = emptyList()
 )
 
-data class RoomDTO (
+data class AssignmentDTO(
+        val id: Long = 0,
+        val activityId: Long = 0,
+        val description: String = "",
+        val participant: List<ParticipantDTO> = emptyList()
+)
+
+data class RoomDTO(
         val name: String = "",
         val roomNr: Int = 0,
-        val lesson: LessonDTO = LessonDTO(0, "", emptyList(), Date(), Date()),
+        val lesson: LessonDTO = LessonDTO(),
         val id: Long = 0
-
 )
