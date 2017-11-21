@@ -2,6 +2,7 @@ package dk.group11.coursesystem.services
 
 import dk.group11.coursesystem.auditClient.AuditClient
 import dk.group11.coursesystem.auditClient.toAuditEntry
+import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
@@ -19,20 +20,23 @@ class AssignmentService(
 ) {
 
     fun getAssignments(courseId: Long): Iterable<Assignment> {
-        return assignmentRepository.findByCourseId(courseId)
+        val course = courseRepository.findOne(courseId)
+        auditClient.createEntry("[CourseSystem] See all assignments",course.assignments.map { it.toAuditEntry() } , security.getToken())
+        return course.assignments
     }
 
     fun getOneAssignment(assignmentId: Long): Assignment {
+        auditClient.createEntry("[CourseSystem] See one assignment", assignmentId, security.getToken())
         return assignmentRepository.findOne(assignmentId)
     }
 
 
-    fun updateAssignment(assignmentId: Long, assignment: Assignment): String {
+    fun updateAssignment(assignmentId: Long, assignment: Assignment): Assignment {
         if (assignmentRepository.exists(assignmentId) && assignment.id == assignmentId)
             assignmentRepository.save(assignment)
         else
-            return "Sorry entry does not exist!"
-        return "assignments successfully updated!"
+            throw BadRequestException("Assignment wasn't updated")
+        return assignment
     }
 
     fun deleteAssignment(assignmentId: Long) {
@@ -43,15 +47,20 @@ class AssignmentService(
         return assignmentRepository.findAll()
     }
 
-    fun createAssignment(courseId: Long, assignment: Assignment) {
+    fun createAssignment(courseId: Long, assignment: Assignment) : Assignment {
         val course = courseRepository.findOne(courseId)
+        assignment.course = course
+
+//        courseRepository.save(course)
+        assignmentRepository.save(assignment)
+        assignment.participants.addAll(course.participants)
+
         course.participants.forEach { it.assignments.add(assignment) }
         course.assignments.add(assignment)
-        assignment.course = course
         courseRepository.save(course)
 
         auditClient.createEntry("[CourseSystem] Assignment created", assignment.toAuditEntry(), security.getToken())
-
+        return assignment
     }
 
     fun getAssigmentsByUserId(id: Long): List<Assignment> {

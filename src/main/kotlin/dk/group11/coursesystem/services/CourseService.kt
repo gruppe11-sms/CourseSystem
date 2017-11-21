@@ -24,7 +24,7 @@ class CourseService(
         auditClient.createEntry("[CourseSystem] Get Course", getCourseAuditEntry(courseId))
         if (courseRepo.exists(courseId)) {
             return courseRepo.findOne(courseId)
-        } else throw BadRequestException("Course Doesnt exist for course id '$courseId'")
+        } else throw BadRequestException("Course doesn't exist for course id '$courseId'")
     }
 
     fun getCourses(): Iterable<Course> {

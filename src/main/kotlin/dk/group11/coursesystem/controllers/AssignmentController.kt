@@ -13,28 +13,28 @@ class AssignmentController(val assignmentService: AssignmentService) {
         return assignmentService.getAssignments(courseId).map { it.toDTO() }
     }
 
-    @GetMapping("/assignments/{assignmentId}")
+    @GetMapping("assignments/{assignmentId}")
     fun getOneAssignment(@PathVariable assignmentId: Long): AssignmentDTO {
         return assignmentService.getOneAssignment(assignmentId).toDTO()
     }
 
-    @GetMapping("/assignments")
+    @GetMapping("assignments")
     fun getAllAssignments(): Iterable<AssignmentDTO> {
         return assignmentService.getAllAssignments().map { it.toDTO() }
     }
 
-    @DeleteMapping("/assignments/{assignmentId}")
+    @DeleteMapping("assignments/{assignmentId}")
     fun deleteAssignment(@PathVariable assignmentId: Long) {
         assignmentService.deleteAssignment(assignmentId)
     }
 
-    @PostMapping("/{courseId}/assignments")
-    fun createAssignment(@PathVariable courseId: Long, @RequestBody assignment: Assignment) {
-        assignmentService.createAssignment(courseId, assignment)
+    @PostMapping("{courseId}/assignments")
+    fun createAssignment(@PathVariable courseId: Long, @RequestBody assignment: Assignment): AssignmentDTO {
+        return assignmentService.createAssignment(courseId, assignment).toDTO(false)
     }
 
-    @PutMapping("/{courseId}/assignments/{assignmentId}")
-    fun updateAssignment(@PathVariable assignmentId: Long, @RequestBody assignment: Assignment) {
-        assignmentService.updateAssignment(assignmentId, assignment)
+    @PutMapping("{courseId}/assignments/{assignmentId}")
+    fun updateAssignment(@PathVariable assignmentId: Long, @RequestBody assignment: Assignment): AssignmentDTO {
+        return assignmentService.updateAssignment(assignmentId, assignment).toDTO(false)
     }
 }
