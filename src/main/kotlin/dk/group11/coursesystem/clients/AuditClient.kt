@@ -1,4 +1,4 @@
-package dk.group11.coursesystem.auditClient
+package dk.group11.coursesystem.clients
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel

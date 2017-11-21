@@ -1,7 +1,7 @@
 package dk.group11.coursesystem.services
 
-import dk.group11.coursesystem.auditClient.AuditClient
-import dk.group11.coursesystem.auditClient.toAuditEntry
+import dk.group11.coursesystem.clients.AuditClient
+import dk.group11.coursesystem.clients.toAuditEntry
 import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.repositories.AssignmentRepository

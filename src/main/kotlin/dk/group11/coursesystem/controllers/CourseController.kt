@@ -1,12 +1,14 @@
 package dk.group11.coursesystem.controllers
 
+import dk.group11.coursesystem.CourseManagementRole
 import dk.group11.coursesystem.models.Course
+import dk.group11.coursesystem.security.SecurityService
 import dk.group11.coursesystem.services.CourseService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/courses")
-class CourseController(val courseService: CourseService) {
+class CourseController(val courseService: CourseService, private val securityService: SecurityService) {
 
     @GetMapping("/test")
     fun sayHello(): String {
@@ -25,19 +27,20 @@ class CourseController(val courseService: CourseService) {
 
     @PostMapping
     fun addCourse(@RequestBody course: Course): CourseDTO {
-        println("receiving a course" + course)
+        securityService.requireRoles(CourseManagementRole)
         return courseService.createCourse(course).toDTO()
     }
 
 
     @PutMapping("/{courseId}")
     fun updateCourse(@PathVariable courseId: Long, @RequestBody course: Course): CourseDTO {
-        println("receiving a course" + course + "and pathvariable" + courseId)
+        securityService.requireRoles(CourseManagementRole)
         return courseService.updateCourse(course).toDTO()
     }
 
     @DeleteMapping
     fun deleteCourse(id : Long){
+        securityService.requireRoles(CourseManagementRole)
         return courseService.deleteCourse(id)
     }
 }

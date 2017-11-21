@@ -1,4 +1,4 @@
-package dk.group11.coursesystem.auditClient
+package dk.group11.coursesystem.clients
 
 import dk.group11.coursesystem.controllers.AssignmentDTO
 import dk.group11.coursesystem.controllers.toDTO
