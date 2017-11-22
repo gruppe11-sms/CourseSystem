@@ -1,6 +1,7 @@
 package dk.group11.coursesystem.controllers
 
 import dk.group11.coursesystem.models.Assignment
+import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.services.AssignmentService
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -39,9 +40,9 @@ class AssignmentController(val assignmentService: AssignmentService) {
         return assignmentService.updateAssignment(assignmentId, assignment).toDTO(false)
     }
 
-    @PostMapping("assignments/{assignmentId")
-    fun uploadAssignment(@PathVariable assignmentId: Long, file: MultipartFile){
-        return assignmentService.uploadAssignment(assignmentId,file)
+    @PostMapping("assignments/{assignmentId}")
+    fun uploadAssignment(@PathVariable assignmentId: Long,@RequestBody participantId: Long, file: MultipartFile){
+        return assignmentService.uploadAssignment(assignmentId, participantId, file)
     }
 
 }

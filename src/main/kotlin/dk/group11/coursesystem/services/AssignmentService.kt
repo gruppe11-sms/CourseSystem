@@ -1,13 +1,14 @@
 package dk.group11.coursesystem.services
 
 import dk.group11.coursesystem.clients.AuditClient
+import dk.group11.coursesystem.clients.FileClient
 import dk.group11.coursesystem.clients.toAuditEntry
 import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.models.Assignment
+import dk.group11.coursesystem.models.HandInAssignment
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
-import dk.group11.coursesystem.clients.FileClient
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -65,11 +66,23 @@ class AssignmentService(
         return assignment
     }
 
-    fun uploadAssignment(assignmentId: Long, file: MultipartFile) {
+    fun uploadAssignment(assignmentId: Long, participantId: Long, file: MultipartFile) {
         auditClient.createEntry("[CourseSystem] Assignment uploaded", assignmentId)
         //TODO valider bruger rettigheder smid ex hvis denne er falsk
+
+        //uploads file
         var uploadedFileResponse = fileService.storeFile(file)
 
+        //checks if the assignment already exists and adds it to the handInAssignment
+        var participant = participantRepository.findOne(participantId)
+
+        var handIn = participant.handInAssignments.find{ it.assignmentId==assignmentId }
+        if (handIn != null){
+            handIn.handInIds.add(uploadedFileResponse.id)
+        }else {
+            var newHandin = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse.id),assignmentId = assignmentId)
+            participant.handInAssignments.add(newHandin)
+        }
 
     }
 
