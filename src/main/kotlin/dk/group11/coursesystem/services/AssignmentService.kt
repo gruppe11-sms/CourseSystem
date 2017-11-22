@@ -7,11 +7,9 @@ import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
-import dk.group11.coursesystem.file.FileService
+import dk.group11.coursesystem.clients.FileClient
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-
-import java.io.File
 
 @Service
 class AssignmentService(
@@ -20,7 +18,7 @@ class AssignmentService(
         private val auditClient: AuditClient,
         //private val security: ISecurityService,
         private val participantRepository: ParticipantRepository,
-        private val fileService: FileService
+        private val fileService: FileClient
 ) {
 
     fun getAssignments(courseId: Long): Iterable<Assignment> {
@@ -69,7 +67,10 @@ class AssignmentService(
 
     fun uploadAssignment(assignmentId: Long, file: MultipartFile) {
         auditClient.createEntry("[CourseSystem] Assignment uploaded", assignmentId)
-        fileService.storeFile(file)
+        //TODO valider bruger rettigheder smid ex hvis denne er falsk
+        var uploadedFileResponse = fileService.storeFile(file)
+
+
     }
 
     fun getAssigmentsByUserId(id: Long): List<Assignment> {
