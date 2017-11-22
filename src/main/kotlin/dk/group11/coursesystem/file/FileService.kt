@@ -1,4 +1,4 @@
-package dk.group11.file.services.storage
+package dk.group11.coursesystem.file
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.Blob
@@ -12,9 +12,8 @@ import java.util.*
 @Service
 class FileService(val fileConfigProperties: FileConfigProperties) : IFileService {
     override fun storeFile(file: MultipartFile) {
-        val newFileName = UUID.randomUUID().toString()
         Fuel.upload(fileConfigProperties.url+ "/api/file").blob { request, url ->
-            Blob(newFileName, file.size, { file.inputStream })
+            Blob(file.name, file.size, { file.inputStream })
         }
     }
 }

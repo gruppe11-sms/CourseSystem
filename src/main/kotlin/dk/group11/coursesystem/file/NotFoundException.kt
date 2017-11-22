@@ -1,4 +1,4 @@
-package dk.group11.file.services.storage
+package dk.group11.coursesystem.file
 
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ResponseStatus
