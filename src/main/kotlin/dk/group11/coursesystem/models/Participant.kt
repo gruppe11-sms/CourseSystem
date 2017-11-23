@@ -17,5 +17,6 @@ data class Participant(
         @GeneratedValue(strategy = GenerationType.AUTO)
         var id: Long = 0,
 
+        @OneToMany(mappedBy = "participant", cascade = arrayOf(CascadeType.ALL))
         var handInAssignments: MutableList<HandInAssignment> = mutableListOf()
 )

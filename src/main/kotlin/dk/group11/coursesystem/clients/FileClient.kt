@@ -7,6 +7,7 @@ import com.github.kittinunf.fuel.core.Deserializable
 import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.response
 import com.github.kittinunf.result.Result
+import dk.group11.coursesystem.models.UploadedFile
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
@@ -40,8 +41,6 @@ class FileClient(val fileConfigProperties: FileConfigProperties) {
         }
     }
 }
-
-data class UploadedFile(val id: Long)
 
 @Configuration
 @ConfigurationProperties(prefix = "file")

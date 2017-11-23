@@ -10,5 +10,10 @@ data class Evaluation(
         @ManyToOne
         var course: Course = Course(),
 
-        @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0
+        @ManyToOne
+        var handInAssignment: HandInAssignment = HandInAssignment(),
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        var id: Long = 0
 )

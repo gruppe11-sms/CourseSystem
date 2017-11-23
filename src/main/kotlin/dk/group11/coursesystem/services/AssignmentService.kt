@@ -78,9 +78,9 @@ class AssignmentService(
 
         var handIn = participant.handInAssignments.find{ it.assignmentId==assignmentId }
         if (handIn != null){
-            handIn.handInIds.add(uploadedFileResponse.id)
+            handIn.handInIds.add(uploadedFileResponse)
         }else {
-            var newHandin = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse.id),assignmentId = assignmentId)
+            var newHandin = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse),assignmentId = assignmentId)
             participant.handInAssignments.add(newHandin)
         }
 
