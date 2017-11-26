@@ -5,11 +5,9 @@ import dk.group11.coursesystem.repositories.EventRepository
 import org.springframework.stereotype.Service
 
 @Service
-class EventService(private val eventRepository : EventRepository) {
+class EventService(private val eventRepository: EventRepository) {
 
-    fun getEvents(): List<Event> {
-        return eventRepository.findAll().toList()
-    }
+    fun getEvents(): List<Event> = eventRepository.findAll().toList()
 
 }
 

@@ -1,39 +1,31 @@
 package dk.group11.coursesystem.controllers
 
-import dk.group11.coursesystem.exceptions.BadRequestException
-import dk.group11.coursesystem.models.Lesson
+import dk.group11.coursesystem.models.AssembledLesson
+import dk.group11.coursesystem.services.DtoService
 import dk.group11.coursesystem.services.LessonService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/courses/{courseId}")
-class LessonController(val lessonService: LessonService) {
+class LessonController(private val lessonService: LessonService,
+                       private val dtoService: DtoService) {
 
     @GetMapping("/lessons")
-    fun getLessonsForCourse(@PathVariable courseId: Long): Iterable<LessonDTO> {
-        return lessonService.getLessons(courseId).map { it.toDTO() }
-    }
+    fun getLessonsForCourse(@PathVariable courseId: Long): Iterable<LessonDTO> =
+            lessonService.getLessons(courseId).map { dtoService.convert(it) }
 
     @PostMapping("/lessons")
-    fun addLesson(@PathVariable courseId: Long, @RequestBody lesson: Lesson): LessonDTO {
-        return lessonService.createLesson(lesson, courseId).toDTO(false)
-    }
+    fun addLesson(@PathVariable courseId: Long, @RequestBody lesson: AssembledLesson): LessonDTO =
+            dtoService.convert(lessonService.createLesson(lesson, courseId), recursive = false)
 
     @GetMapping("/lessons/{lessonId}")
-    fun getLesson(@PathVariable lessonId: Long): LessonDTO {
-        return lessonService.getLesson(lessonId).toDTO()
-    }
+    fun getLesson(@PathVariable lessonId: Long): LessonDTO = dtoService.convert(lessonService.getLesson(lessonId))
 
     @PutMapping("/lessons/{lessonId}")
-    fun updateLesson(@RequestBody lesson: Lesson, @PathVariable lessonId: Long): LessonDTO {
-        if (lesson.id != lessonId) {
-            throw BadRequestException("Lesson id attempted update does not match lessonId URL")
-        }
-        return lessonService.updateLesson(lesson).toDTO(false)
-    }
+    fun updateLesson(@RequestBody lesson: AssembledLesson, @PathVariable lessonId: Long): LessonDTO =
+            dtoService.convert(lessonService.updateLesson(lesson, lessonId), recursive = false)
 
     @DeleteMapping("/lessons/{lessonId}")
-    fun deleteLesson(@PathVariable lessonId: Long) {
-        lessonService.deleteLesson(lessonId)
-    }
+    fun deleteLesson(@PathVariable lessonId: Long) = lessonService.deleteLesson(lessonId)
+
 }

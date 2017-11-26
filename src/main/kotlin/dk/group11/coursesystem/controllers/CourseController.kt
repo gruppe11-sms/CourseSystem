@@ -1,46 +1,46 @@
 package dk.group11.coursesystem.controllers
 
-import dk.group11.coursesystem.CourseManagementRole
+import dk.group11.coursesystem.COURSE_CREATOR_ROLE
+import dk.group11.coursesystem.COURSE_MANAGEMENT_ROLE
 import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.security.SecurityService
 import dk.group11.coursesystem.services.CourseService
+import dk.group11.coursesystem.services.DtoService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/courses")
-class CourseController(val courseService: CourseService, private val securityService: SecurityService) {
+class CourseController(private val courseService: CourseService,
+                       private val securityService: SecurityService,
+                       private val dtoService: DtoService) {
 
     @GetMapping("/test")
-    fun sayHello(): String {
-        return "Hello world"
-    }
+    fun sayHello(): String = "Hello world"
 
     @GetMapping("/{courseId}")
-    fun getCourseById(@PathVariable courseId: Long): CourseDTO {
-        return courseService.getCourseById(courseId).toDTO()
-    }
+    fun getCourseById(@PathVariable courseId: Long): CourseDTO =
+            dtoService.convert(courseService.getCourseById(courseId))
 
     @GetMapping
-    fun getCourses(): Iterable<CourseDTO> {
-        return courseService.getCourses().map { it.toDTO() }
-    }
+    fun getCourses(): Iterable<CourseDTO> = courseService.getCourses().map { dtoService.convert(it) }
 
     @PostMapping
     fun addCourse(@RequestBody course: Course): CourseDTO {
-        securityService.requireRoles(CourseManagementRole)
-        return courseService.createCourse(course).toDTO()
+        securityService.requireRoles(COURSE_CREATOR_ROLE)
+        val newCourse = courseService.createCourse(course)
+        return dtoService.convert(newCourse)
     }
-
 
     @PutMapping("/{courseId}")
     fun updateCourse(@PathVariable courseId: Long, @RequestBody course: Course): CourseDTO {
-        securityService.requireRoles(CourseManagementRole)
-        return courseService.updateCourse(course).toDTO()
+        securityService.requireRoles(COURSE_MANAGEMENT_ROLE)
+        val updatedCourse = courseService.updateCourse(course)
+        return dtoService.convert(updatedCourse)
     }
 
     @DeleteMapping
     fun deleteCourse(id: Long) {
-        securityService.requireRoles(CourseManagementRole)
-        return courseService.deleteCourse(id)
+        securityService.requireRoles(COURSE_MANAGEMENT_ROLE)
+        courseService.deleteCourse(id)
     }
 }

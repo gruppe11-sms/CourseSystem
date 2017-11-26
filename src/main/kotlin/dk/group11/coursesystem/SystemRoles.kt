@@ -1,3 +1,6 @@
 package dk.group11.coursesystem
 
-val CourseManagementRole = "COURSE_MANAGEMENT_ROLE"
+const val GROUP_MAINTAINER_ROLE = "GROUP_MAINTAINER"
+const val ROLE_CREATOR_ROLE = "ROLE_CREATOR"
+const val COURSE_CREATOR_ROLE = "COURSE_CREATOR"
+const val COURSE_MANAGEMENT_ROLE = "COURSE_MANAGER"

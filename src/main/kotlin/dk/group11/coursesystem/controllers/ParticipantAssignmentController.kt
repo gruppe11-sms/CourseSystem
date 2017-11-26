@@ -1,23 +1,20 @@
 package dk.group11.coursesystem.controllers
 
-import dk.group11.coursesystem.models.Assignment
-import dk.group11.coursesystem.models.Participant
+import dk.group11.coursesystem.models.AssembledAssignment
+import dk.group11.coursesystem.services.DtoService
 import dk.group11.coursesystem.services.ParticipantService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/courses")
-class ParticipantAssignmentController(private val participantService: ParticipantService) {
+class ParticipantAssignmentController(private val participantService: ParticipantService,
+                                      private val dtoService: DtoService) {
 
     @GetMapping("/participants/{participantId}/assignments")
-    fun getParticipantAssignments(@PathVariable participantId: Long): Iterable<AssignmentDTO> {
-        return participantService.findParticipantById(participantId).assignments.map { it.toDTO() }
-    }
+    fun getParticipantAssignments(@PathVariable participantId: Long): List<AssignmentDTO> =
+            participantService.getAssignmentByParticipantId(participantId).map { dtoService.convert(it) }
 
     @PostMapping("/api/courses/participants/{participantId}/assignments")
-    fun saveAssignment(@PathVariable participantId: Long, @RequestBody assignment: Assignment) {
-        val participant: Participant = participantService.findParticipantById(participantId)
-        participant.assignments.add(assignment)
-        participantService.saveParticipant(participant.course.id, participant)
-    }
+    fun saveAssignment(@PathVariable participantId: Long, @RequestBody assignment: AssembledAssignment) =
+            participantService.addAssignmentToParticipant(participantId, assignment)
 }

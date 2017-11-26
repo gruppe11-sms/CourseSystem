@@ -33,7 +33,9 @@ class SecurityService(private val request: HttpServletRequest, private val roleC
     fun requireRoles(vararg roleKeys: String) {
         val hasRoles = roleClient.hasRoles(getToken(), *roleKeys)
         if (!hasRoles) {
-            throw ForbiddenException("Required roles: ${roleKeys.joinToString(", ")}")
+            val errMsg = "Required roles: ${roleKeys.joinToString(separator = ", ")}"
+            System.err.println(errMsg)
+            throw ForbiddenException(errMsg)
         }
     }
 }
