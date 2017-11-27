@@ -2,7 +2,7 @@ package dk.group11.coursesystem.repositories
 
 import dk.group11.coursesystem.models.ParticipantRole
 import org.springframework.data.repository.CrudRepository
+import org.springframework.stereotype.Repository
 
-interface ParticipantRoleRepository : CrudRepository<ParticipantRole, Long> {
-    fun findByKey(key: String): ParticipantRole
-}
+@Repository
+interface ParticipantRoleRepository : CrudRepository<ParticipantRole, Long>

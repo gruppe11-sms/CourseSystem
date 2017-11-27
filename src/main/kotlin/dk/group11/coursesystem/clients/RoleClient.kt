@@ -24,7 +24,7 @@ class InternalServerError(message: String) : RuntimeException(message)
 class AccessDenied : RuntimeException()
 class RequestFailed : RuntimeException()
 
-private val JsonContentType = Pair("Content-Type", "application/json")
+private val JSON_CONTENT_TYPE = Pair("Content-Type", "application/json")
 
 @Service
 class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
@@ -40,7 +40,7 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
         fun toJSON(): String = ObjectMapper().writeValueAsString(this)
     }
 
-    private data class assertRoleResponse(var success: Boolean)
+    private data class assertRoleResponse(var success: Boolean = false)
 
     private object assetRoleResponseDeserializer : Deserializable<assertRoleResponse> {
         override fun deserialize(response: Response): assertRoleResponse {
@@ -59,7 +59,7 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
     private fun login() {
         val requestJson = loginRequest(roleConfigProperties.username, roleConfigProperties.password).toJSON()
         val (_, response, result) = Fuel.post("${roleConfigProperties.url}/login")
-                .header(JsonContentType)
+                .header(JSON_CONTENT_TYPE)
                 .body(requestJson)
                 .responseString()
 
@@ -69,7 +69,7 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
                     val authHeaders = response.headers[HEADER_STRING]
                     if (authHeaders != null) {
                         token = authHeaders.first()
-                        println("Set token: " + token)
+                        println("Set token: $token")
                         return
                     }
                 }
@@ -77,10 +77,8 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
             else -> {
             }
         }
-
         throw InternalServerError("Could not authorize with role system")
     }
-
 
     /**
      * Ensures that a given role exists
@@ -88,8 +86,8 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
     @Retryable(maxAttempts = 3, backoff = Backoff(delay = 3000), value = *arrayOf(AccessDenied::class, RequestFailed::class))
     fun ensureRole(key: String, title: String, description: String) {
         println("Try")
-        val (_, response, result) = Fuel.post("${roleConfigProperties.url}/api/roles")
-                .header(JsonContentType)
+        val (_, response, result) = Fuel.post(path = "${roleConfigProperties.url}/api/roles")
+                .header(JSON_CONTENT_TYPE)
                 .header(Pair(HEADER_STRING, "$TOKEN_PREFIX $token"))
                 .body(createRoleRequest(key, title, description).toJSON())
                 .responseString()
@@ -116,12 +114,16 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
      */
     @Retryable(value = InternalServerError::class, backoff = Backoff(delay = 3000))
     fun hasRoles(authHeader: String, vararg roleKeys: String): Boolean {
-        val (_, _, result) = Fuel.get("${roleConfigProperties.url}/api/user/verify", listOf(Pair("roles", roleKeys.joinToString(","))))
+        val (_, _, result) = Fuel.get(
+                path = "${roleConfigProperties.url}/api/users/verify",
+                parameters = listOf(Pair("roles", roleKeys.joinToString(",")))
+        )
                 .header(Pair(HEADER_STRING, authHeader))
                 .response(assetRoleResponseDeserializer)
 
         when (result) {
             is Result.Failure -> {
+                System.err.print(result.error)
                 throw InternalServerError("Could not contact role system")
             }
             is Result.Success -> {
@@ -130,7 +132,6 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
         }
     }
 }
-
 
 @Configuration
 @ConfigurationProperties(prefix = "role")

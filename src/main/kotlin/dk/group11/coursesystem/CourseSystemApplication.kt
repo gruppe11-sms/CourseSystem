@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
 @Component
 class Startup(private val roleClient: RoleClient) : ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
-        roleClient.ensureRole(CourseManagementRole, "Course Manager", "Allows the user to create, edit and delete courses")
+        roleClient.ensureRole(COURSE_MANAGEMENT_ROLE, "Course Manager", "Allows the user to create, edit and delete courses")
     }
 
 }

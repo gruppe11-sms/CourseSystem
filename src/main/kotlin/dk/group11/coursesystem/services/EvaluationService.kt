@@ -7,9 +7,7 @@ import org.springframework.stereotype.Service
 @Service
 class EvaluationService(private val evaluationRepository: EvaluationRepository) {
 
-    fun getEvaluation(evaluationId: Long): Evaluation {
-        return evaluationRepository.findOne(evaluationId)
-    }
+    fun getEvaluation(evaluationId: Long): Evaluation = evaluationRepository.findOne(evaluationId)
 
     fun deleteEvaluation(evaluationId: Long) {
         evaluationRepository.delete(evaluationId)
@@ -24,9 +22,7 @@ class EvaluationService(private val evaluationRepository: EvaluationRepository) 
             evaluationRepository.save(evaluation)
     }
 
-    fun getAll(): Iterable<Evaluation> {
-        return evaluationRepository.findAll()
-    }
+    fun getAll(): Iterable<Evaluation> = evaluationRepository.findAll()
 
 
 }
