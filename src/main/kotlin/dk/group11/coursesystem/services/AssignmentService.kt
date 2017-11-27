@@ -2,10 +2,10 @@ package dk.group11.coursesystem.services
 
 import dk.group11.coursesystem.clients.AuditClient
 import dk.group11.coursesystem.clients.CalendarClient
-import dk.group11.coursesystem.clients.SimpleAssignmentAuditEntry
-import dk.group11.coursesystem.controllers.SimpleAssignmentDTO
 import dk.group11.coursesystem.clients.FileClient
-import dk.group11.coursesystem.clients.toAuditEntry
+import dk.group11.coursesystem.clients.SimpleAssignmentAuditEntry
+import dk.group11.coursesystem.controllers.ServerTask
+import dk.group11.coursesystem.controllers.SimpleAssignmentDTO
 import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.models.AssembledAssignment
 import dk.group11.coursesystem.models.Assignment
@@ -13,8 +13,8 @@ import dk.group11.coursesystem.models.HandInAssignment
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
+import dk.group11.coursesystem.security.SecurityService
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 
 // TODO add audit entries
 @Service
@@ -23,7 +23,8 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
                         private val auditClient: AuditClient,
                         private val participantRepository: ParticipantRepository,
                         private val calendarClient: CalendarClient,
-                        private val fileService: FileClient) {
+                        private val fileService: FileClient,
+                        private val securityService: SecurityService) {
 
     fun getAssignments(courseId: Long): Iterable<AssembledAssignment> {
         val course = courseRepository.findOne(courseId)
@@ -80,24 +81,32 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         return assignment
     }
 
-    fun uploadAssignment(assignmentId: Long, participantId: Long, file: MultipartFile) {
-        auditClient.createEntry("[CourseSystem] Assignment uploaded", assignmentId)
-        //TODO valider bruger rettigheder smid ex hvis denne er falsk
+    fun uploadAssignment(task: ServerTask) {
+        //Audit
+        auditClient.createEntry("[CourseSystem] Assignment uploaded", task)
 
-        //uploads file
-        var uploadedFileResponse = fileService.storeFile(file)
+        // Finds a participant
+        val participant = assignmentRepository
+                .findOne(task.assignmentId)
+                .participants
+                .find { it.userId == securityService.getId() }
 
-        //checks if the assignment already exists and adds it to the handInAssignment
-        var participant = participantRepository.findOne(participantId)
+        //Uploads file
+        val uploadedFileResponse = fileService.storeFile(task.file)
 
-        var handIn = participant.handInAssignments.find{ it.assignmentId==assignmentId }
-        if (handIn != null){
+        //Finds a handIn or Null
+        val handIn = participant
+                ?.handInAssignments
+                ?.find { it.assignmentId == task.assignmentId }
+
+
+        //Checks if the assignment already exists and adds it to the handInAssignment
+        if (handIn != null) {
             handIn.handInIds.add(uploadedFileResponse)
-        }else {
-            var newHandin = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse),assignmentId = assignmentId)
-            participant.handInAssignments.add(newHandin)
+        } else {
+            val newHandin = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse), assignmentId = task.assignmentId)
+            participant?.handInAssignments?.add(newHandin)
         }
-
     }
 
 

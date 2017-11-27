@@ -11,4 +11,5 @@ data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
                       var participants: MutableList<Participant> = mutableListOf(),
                       @ManyToOne(cascade = arrayOf(CascadeType.ALL))
                       @JoinColumn
-                      var course: Course = Course())
+                      var course: Course = Course()
+)

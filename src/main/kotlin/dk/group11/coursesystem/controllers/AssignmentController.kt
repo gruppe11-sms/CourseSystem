@@ -1,7 +1,5 @@
 package dk.group11.coursesystem.controllers
 
-import dk.group11.coursesystem.models.Assignment
-import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.models.AssembledAssignment
 import dk.group11.coursesystem.services.AssignmentService
 import dk.group11.coursesystem.services.DtoService
@@ -33,12 +31,17 @@ class AssignmentController(private val assignmentService: AssignmentService,
                          @RequestBody assignment: AssembledAssignment): AssignmentDTO =
             dtoService.convert(assignmentService.createAssignment(courseId, assignment))
 
-    @PostMapping("assignments/{assignmentId}")
-    fun uploadAssignment(@PathVariable assignmentId: Long,@RequestBody participantId: Long, file: MultipartFile){
-        return assignmentService.uploadAssignment(assignmentId, participantId, file)
+    @PostMapping("assignments/uploadAssignments")
+    fun uploadAssignment(@RequestBody task: UploadTask) {
+        println(task.assignmentId + "test")
+        val serverTask = ServerTask(task.file, task.assignmentId.toLong())
+        return assignmentService.uploadAssignment(serverTask)
     }
 
     fun updateAssignment(@PathVariable assignmentId: Long,
                          @RequestBody assignment: AssembledAssignment): AssignmentDTO =
             dtoService.convert(assignmentService.updateAssignment(assignmentId, assignment))
 }
+
+data class ServerTask(val file: MultipartFile, val assignmentId: Long)
+data class UploadTask(val file: MultipartFile, val assignmentId: String)
