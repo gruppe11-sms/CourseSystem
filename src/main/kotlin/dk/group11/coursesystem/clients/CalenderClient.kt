@@ -19,6 +19,7 @@ class CalendarClient(private val calendarConfigProperties: CalendarConfigPropert
                 .responseString()
         // TODO proper exception handling
 
+
         result.fold(
                 { return ObjectMapper().readValue(it, Activity::class.java) },
                 {

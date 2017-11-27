@@ -20,10 +20,7 @@ data class AssembledAssignment(val id: Long = 0,
             course = assignment.course,
             description = assignment.description,
             participants = assignment.participants
-    ) {
-        if (assignment.activityId != activity.id)
-            throw IllegalArgumentException("Lesson Id and Activity Id must match")
-    }
+    )
 
     fun getAssignment(): Assignment = Assignment(
             id = id,

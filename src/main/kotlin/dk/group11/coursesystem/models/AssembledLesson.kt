@@ -20,10 +20,7 @@ data class AssembledLesson(var activityId: Long = 0,
             endDate = activity.endDate,
             description = lesson.description,
             rooms = lesson.rooms
-    ) {
-        if (lesson.activityId != activity.id)
-            throw IllegalArgumentException("Lesson Id and Activity Id must match")
-    }
+    )
 
     fun getLesson(): Lesson = Lesson(
             id = id,

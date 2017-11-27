@@ -44,11 +44,6 @@ class LessonService(private val lessonRepository: LessonRepository,
         return lesson
     }
 
-    fun getLessonsByUserId(userId: Long): List<Lesson> {
-        val participants = participantRepository.findByUserId(userId)
-        return participants.map { it.course }.flatMap { it.lessons }
-    }
-
     fun getLesson(lessonId: Long): AssembledLesson {
         val lesson = lessonRepository.findOne(lessonId)
         auditClient.createEntry("[CourseSystem] Get Lesson", lessonId)

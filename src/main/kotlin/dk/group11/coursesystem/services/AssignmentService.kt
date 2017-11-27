@@ -52,20 +52,12 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
     }
 
     fun createAssignment(courseId: Long, assignment: AssembledAssignment): AssembledAssignment {
-        // TODO clean up crazy code
-        val course = courseRepository.findOne(courseId)
-        assignment.course = course
-
         val activity = calendarClient.createActivity(assignment.getActivity())
         assignment.activityId = activity.id
-
-        assignmentRepository.save(assignment.getAssignment())
+        val course = courseRepository.findOne(courseId)
+        assignment.course = course
         assignment.participants.addAll(course.participants)
-
-        course.participants.forEach { it.assignments.add(assignment.getAssignment()) }
-        course.assignments.add(assignment.getAssignment())
-        courseRepository.save(course)
-
+        assignmentRepository.save(assignment.getAssignment())
         auditClient.createEntry(
                 action = "[CourseSystem] Assignment created",
                 data = SimpleAssignmentAuditEntry(
@@ -75,9 +67,6 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         return assignment
     }
 
-    fun getAssignmentsByUserId(id: Long): List<Assignment> {
-        return participantRepository.findByUserId(id).flatMap { it.assignments }
-    }
 
     fun assemble(assignment: Assignment): AssembledAssignment =
             AssembledAssignment(assignment, calendarClient.getActivity(assignment.activityId))
