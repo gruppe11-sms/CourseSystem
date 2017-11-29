@@ -39,7 +39,8 @@ data class LessonDTO(
         val title: String = "",
         val startDate: Date = Date(),
         val endDate: Date = Date(),
-        val description: String = ""
+        val description: String = "",
+        val course: CourseDTO = CourseDTO()
 )
 
 data class AssignmentDTO(
@@ -64,14 +65,6 @@ data class EventDTO(
         val title: String = "",
         val startDate: Date = Date(),
         val endDate: Date = Date()
-)
-
-data class SimpleLessonDTO(
-        val id: Long = 0,
-        val activityId: Long = 0,
-        val description: String = "",
-        val course: CourseDTO = CourseDTO(),
-        val rooms: List<RoomDTO> = emptyList()
 )
 
 data class SimpleAssignmentDTO(

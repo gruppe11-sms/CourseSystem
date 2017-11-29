@@ -1,21 +1,18 @@
 package dk.group11.coursesystem.controllers
 
 import dk.group11.coursesystem.models.Evaluation
-import dk.group11.coursesystem.services.DtoService
 import dk.group11.coursesystem.services.EvaluationService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/courses")
-class EvaluationController(private val evaluationService: EvaluationService,
-                           private val dtoService: DtoService) {
+class EvaluationController(private val evaluationService: EvaluationService) {
 
     @GetMapping("/evaluations/{evaluationId}")
-    fun getEvaluation(@PathVariable evaluationId: Long): EvaluationDTO =
-            dtoService.convert(evaluationService.getEvaluation(evaluationId))
+    fun getEvaluation(@PathVariable evaluationId: Long): EvaluationDTO = evaluationService.getEvaluation(evaluationId).toDTO()
 
     @GetMapping("/evaluations")
-    fun getAllEvaluations(): Iterable<EvaluationDTO> = evaluationService.getAll().map { dtoService.convert(it) }
+    fun getAllEvaluations(): Iterable<EvaluationDTO> = evaluationService.getAll().map { it.toDTO() }
 
     @PutMapping("/{courseId}/evaluations/{evaluationId}")
     fun updateEvaluation(@PathVariable evaluationId: Long, @RequestBody evaluation: Evaluation) =

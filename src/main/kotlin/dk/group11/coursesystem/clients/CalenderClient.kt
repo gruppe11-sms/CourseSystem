@@ -14,16 +14,21 @@ class CalendarClient(private val calendarConfigProperties: CalendarConfigPropert
                      private val securityService: ISecurityService) {
 
     fun getActivity(activityId: Long): Activity {
-        val (_, _, result) = Fuel.get("${calendarConfigProperties.url}/api/activities/$activityId")
+        val (_, response, result) = Fuel.get("${calendarConfigProperties.url}/api/activities/$activityId")
+                .header(Pair("Accepts", "application/json"))
                 .header(Pair(HEADER_STRING, securityService.getToken()))
                 .responseString()
         // TODO proper exception handling
 
 
+
         result.fold(
-                { return ObjectMapper().readValue(it, Activity::class.java) },
+                {
+                    return ObjectMapper().readValue(it, Activity::class.java)
+                },
                 {
                     System.err.println(it)
+                    println(response)
                     return Activity()
                 })
     }
