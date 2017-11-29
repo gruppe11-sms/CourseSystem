@@ -17,7 +17,7 @@ data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
                               joinColumns = arrayOf(JoinColumn(name = "assignment_id")),
                               inverseJoinColumns = arrayOf(JoinColumn(name = "participant_id"))
                       )
-                      var participants: MutableList<Participant> = mutableListOf(),
+                      var participants: MutableSet<Participant> = mutableSetOf(),
                       @ManyToOne(cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
                       @JoinColumn
                       var course: Course = Course()) {
@@ -35,4 +35,21 @@ data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
                 endDate = activity.endDate
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Assignment
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+
 }

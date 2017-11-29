@@ -72,7 +72,7 @@ class LessonService(private val lessonRepository: LessonRepository,
         )
 
         before.description = lesson.description
-        before.rooms = lesson.rooms.map { roomRepository.findOne(it.id) }.toMutableList()
+        before.rooms = lesson.rooms.map { roomRepository.findOne(it.id) }.toMutableSet()
 
         calendarClient.updateActivity(Activity(before.activityId, lesson.title, lesson.startDate, lesson.endDate))
 
@@ -89,7 +89,7 @@ class LessonService(private val lessonRepository: LessonRepository,
         )
     }
 
-    fun getLessons(courseId: Long): List<Lesson> {
+    fun getLessons(courseId: Long): Set<Lesson> {
         val lessons = courseRepository.findOne(courseId).lessons
         auditClient.createEntry(action = "[CourseSystem] Get Lessons for Course", data = courseId)
         return lessons

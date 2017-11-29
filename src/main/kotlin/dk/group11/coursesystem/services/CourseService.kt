@@ -11,6 +11,7 @@ import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 data class updateCourseAuditEntry(val before: CourseDTO, val after: CourseDTO)
 
@@ -54,6 +55,7 @@ class CourseService(private val courseRepository: CourseRepository,
         return course
     }
 
+    @Transactional
     fun updateCourse(course: Course): Course {
 
         val currentCourse = courseRepository.findOne(course.id)
@@ -64,20 +66,21 @@ class CourseService(private val courseRepository: CourseRepository,
         currentCourse.startDate = course.startDate
         currentCourse.endDate = course.endDate
 
-        currentCourse.participants.clear()
-        currentCourse.participants.addAll(
-                course.participants.map {
-                    println(it)
-                    var participant = participantRepository.findOne(it.id)
+        // Remove any participants that are no longer part of the course
+        val oldParticipants = currentCourse.participants.filter { currentParticipant -> !course.participants.any { currentParticipant.userId == it.userId } }
+        participantRepository.delete(oldParticipants)
 
-                    if (participant == null) {
-                        participant = Participant(userId = it.userId, course = currentCourse)
-                        participantRepository.save(participant)
-                    }
+        // Add any new ones
+        currentCourse.participants = course.participants.map {
+            var participant = participantRepository.findOne(it.id)
 
-                    participant
-                }
-        )
+            if (participant == null) {
+                participant = Participant(userId = it.userId, course = currentCourse)
+                participantRepository.save(participant)
+            }
+
+            participant
+        }.toMutableSet()
 
         return currentCourse
     }

@@ -11,13 +11,13 @@ data class Course(
         var startDate: Date = Date(),
         var endDate: Date = Date(),
         @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-        var participants: MutableList<Participant> = mutableListOf(),
+        var participants: MutableSet<Participant> = mutableSetOf(),
         @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-        var lessons: MutableList<Lesson> = mutableListOf(),
+        var lessons: MutableSet<Lesson> = mutableSetOf(),
         @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-        var assignments: MutableList<Assignment> = mutableListOf(),
+        var assignments: MutableSet<Assignment> = mutableSetOf(),
         @OneToMany(mappedBy = "course", cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-        var evaluations: MutableList<Evaluation> = mutableListOf(),
+        var evaluations: MutableSet<Evaluation> = mutableSetOf(),
         @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: Long = 0
 ) {
 
@@ -45,6 +45,21 @@ data class Course(
                 evaluations = evaluations,
                 description = description
         )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Course
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
     }
 
 

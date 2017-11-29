@@ -16,7 +16,7 @@ data class Lesson(
         @ManyToOne
         var course: Course = Course(),
         @OneToMany(mappedBy = "lesson", cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-        var rooms: MutableList<Room> = mutableListOf()
+        var rooms: MutableSet<Room> = mutableSetOf()
 ) {
     fun toDTO(recursive: Boolean = true): LessonDTO {
         val rooms = if (recursive)
@@ -31,4 +31,21 @@ data class Lesson(
                 description = description
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Lesson
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+
 }

@@ -103,7 +103,7 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
                 ),
                 description = assignmentDTO.description,
                 participants = assignmentDTO.participants
-                        .map { Participant(it.userId) }.toMutableList()
+                        .map { Participant(it.userId) }.toMutableSet()
         )
 
         return createAssignment(courseId, assignment)
