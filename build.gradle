@@ -21,6 +21,7 @@ apply plugin: 'org.springframework.boot'
 group = 'dk.group11'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+archivesBaseName = "coursesystem"
 compileKotlin {
 	kotlinOptions.jvmTarget = "1.8"
 }
@@ -56,5 +57,6 @@ dependencies {
 
 	runtime('org.postgresql:postgresql')
 
+	testCompile("com.h2database:h2:1.4.196")
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
