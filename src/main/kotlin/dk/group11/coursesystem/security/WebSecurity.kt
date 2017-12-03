@@ -10,15 +10,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 
 @EnableWebSecurity
-class WebSecurity : WebSecurityConfigurerAdapter() {
+class WebSecurity(
+        private val secretService: ISecretService
+) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable().authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(AuthorizationFilter(authenticationManager()))
+                .addFilter(AuthorizationFilter(authenticationManager(), secretService))
 
     }
+
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {

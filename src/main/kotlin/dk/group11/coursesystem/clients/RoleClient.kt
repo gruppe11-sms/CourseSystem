@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.response
 import com.github.kittinunf.result.Result
 import dk.group11.coursesystem.security.HEADER_STRING
+import dk.group11.coursesystem.security.ISecretService
 import dk.group11.coursesystem.security.TOKEN_PREFIX
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
@@ -27,7 +28,7 @@ class RequestFailed : RuntimeException()
 private val JSON_CONTENT_TYPE = Pair("Content-Type", "application/json")
 
 @Service
-class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
+class RoleClient(private val roleConfigProperties: RoleConfigProperties, private val secretService: ISecretService) {
 
 
     private object UserType : TypeReference<Map<String, String>>()
@@ -55,9 +56,10 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
 
     private class loginRequest(val username: String, val password: String) : Jsonable
 
-    @Retryable(backoff = Backoff(delay = 3000))
+    @Retryable(maxAttempts = 2, backoff = Backoff(delay = 3000))
     private fun login() {
-        val requestJson = loginRequest(roleConfigProperties.username, roleConfigProperties.password).toJSON()
+        val systemPassword = String(secretService.get("system_password")).trim()
+        val requestJson = loginRequest(roleConfigProperties.username, systemPassword).toJSON()
         val (_, response, result) = Fuel.post("${roleConfigProperties.url}/login")
                 .header(JSON_CONTENT_TYPE)
                 .body(requestJson)
@@ -85,7 +87,6 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
      */
     @Retryable(maxAttempts = 3, backoff = Backoff(delay = 3000), value = *arrayOf(AccessDenied::class, RequestFailed::class))
     fun ensureRole(key: String, title: String, description: String) {
-        println("Try")
         val (_, response, result) = Fuel.post(path = "${roleConfigProperties.url}/api/roles")
                 .header(JSON_CONTENT_TYPE)
                 .header(Pair(HEADER_STRING, "$TOKEN_PREFIX $token"))
@@ -94,8 +95,6 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties) {
 
         when (result) {
             is Result.Failure -> {
-
-                println("Request failed")
                 login()
                 throw RequestFailed()
             }
