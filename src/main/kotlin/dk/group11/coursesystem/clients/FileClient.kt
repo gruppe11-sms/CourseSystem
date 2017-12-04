@@ -27,10 +27,11 @@ class FileClient(val fileConfigProperties: FileConfigProperties) {
     }
 
     fun storeFile(file: MultipartFile): UploadedFile {
-        var (_,_,result) = Fuel.upload(fileConfigProperties.url+ "/api/file").blob { request, url ->
-            Blob(file.name, file.size, { file.inputStream })
-        }.response(fileUploadResponseDeserializer)
-
+        println(fileConfigProperties.url)
+        var (_,response,result) = Fuel.upload("${fileConfigProperties.url}/api/file")
+                .blob { _, _ -> Blob(file.name, file.size, { file.inputStream })}
+                .response(fileUploadResponseDeserializer)
+        println(response)
         when(result){
             is Result.Failure -> {
                 throw InternalServerError("Could not contact file system")

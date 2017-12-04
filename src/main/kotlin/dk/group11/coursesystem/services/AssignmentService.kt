@@ -2,29 +2,32 @@ package dk.group11.coursesystem.services
 
 import dk.group11.coursesystem.clients.AuditClient
 import dk.group11.coursesystem.clients.CalendarClient
-import dk.group11.coursesystem.clients.FileClient
 import dk.group11.coursesystem.clients.SimpleAssignmentAuditEntry
-import dk.group11.coursesystem.controllers.ServerTask
 import dk.group11.coursesystem.controllers.SimpleAssignmentDTO
+import dk.group11.coursesystem.controllers.UploadTask
 import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.models.AssembledAssignment
 import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.models.HandInAssignment
+import dk.group11.coursesystem.models.UploadedFile
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
+import dk.group11.coursesystem.repositories.HandInRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
 import dk.group11.coursesystem.security.SecurityService
+import dk.group11.coursesystem.services.fileService.storage.FileService
 import org.springframework.stereotype.Service
 
-// TODO add audit entries
+
 @Service
 class AssignmentService(private val assignmentRepository: AssignmentRepository,
                         private val courseRepository: CourseRepository,
                         private val auditClient: AuditClient,
                         private val participantRepository: ParticipantRepository,
                         private val calendarClient: CalendarClient,
-                        private val fileService: FileClient,
-                        private val securityService: SecurityService) {
+                        private val fileService: FileService,
+                        private val securityService: SecurityService,
+                        private val handInRepository: HandInRepository) {
 
     fun getAssignments(courseId: Long): Iterable<AssembledAssignment> {
         val course = courseRepository.findOne(courseId)
@@ -81,34 +84,44 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         return assignment
     }
 
-    fun uploadAssignment(task: ServerTask) {
-        //Audit
-        auditClient.createEntry("[CourseSystem] Assignment uploaded", task)
+    fun uploadAssignment(task: UploadTask): UploadedFile {
+        auditClient.createEntry("[CourseSystem] Assignment uploaded", task.assignmentId)
+
+
+        val assignment = assignmentRepository
+                .findOne(task.assignmentId)
+                ?: throw BadRequestException("Assignment not found")
 
         // Finds a participant
-        val participant = assignmentRepository
-                .findOne(task.assignmentId)
-                .participants
+        // TODO refactor such that find is done on the database level and not through a kotlin stream
+        val participant = assignment.participants
                 .find { it.userId == securityService.getId() }
+                ?: throw BadRequestException("For some reason you do not exists on this assignment")
 
-        //Uploads file
-        val uploadedFileResponse = fileService.storeFile(task.file)
+        //Uploads file and returns the id for the stored file
+        val uploadedFileResponse = UploadedFile(fileService.storeFile(task.file))
 
         //Finds a handIn or Null
-        val handIn = participant
-                ?.handInAssignments
-                ?.find { it.assignmentId == task.assignmentId }
+        // TODO check in the database table handins if the assignment exists based on some criterias
 
+        val handInExists = participant.handInAssignments.find { it.assignmentId == task.assignmentId }
 
-        //Checks if the assignment already exists and adds it to the handInAssignment
-        if (handIn != null) {
-            handIn.handInIds.add(uploadedFileResponse)
+        //Checks if the assignment already exists and adds it to the handInAssignment. Else create a new handin.
+        if (handInExists != null) {
+            participant.handInAssignments.forEach {
+                if (it.assignmentId == task.assignmentId) {
+                    it.handInIds.add(uploadedFileResponse)
+                }
+            }
         } else {
-            val newHandin = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse), assignmentId = task.assignmentId)
-            participant?.handInAssignments?.add(newHandin)
+            val newHandIn = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse), assignmentId = task.assignmentId, participant = participant)
+            handInRepository.save(newHandIn)
+            participant.handInAssignments.add(newHandIn)
         }
-    }
+        participantRepository.save(participant)
 
+        return uploadedFileResponse
+    }
 
     fun getAssignmentsByUserId(id: Long): List<Assignment> {
         return participantRepository.findByUserId(id).flatMap { it.assignments }

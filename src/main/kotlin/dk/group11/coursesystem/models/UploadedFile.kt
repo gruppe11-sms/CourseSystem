@@ -6,5 +6,5 @@ import javax.persistence.Id
 @Entity
 data class UploadedFile(
         @Id
-        val id: Long
+        val id: Long = 0
 )

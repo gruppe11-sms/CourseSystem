@@ -1,6 +1,7 @@
 package dk.group11.coursesystem.controllers
 
 import dk.group11.coursesystem.models.AssembledAssignment
+import dk.group11.coursesystem.models.UploadedFile
 import dk.group11.coursesystem.services.AssignmentService
 import dk.group11.coursesystem.services.DtoService
 import org.springframework.web.bind.annotation.*
@@ -32,10 +33,8 @@ class AssignmentController(private val assignmentService: AssignmentService,
             dtoService.convert(assignmentService.createAssignment(courseId, assignment))
 
     @PostMapping("assignments/uploadAssignments")
-    fun uploadAssignment(@RequestBody task: UploadTask) {
-        println(task.assignmentId + "test")
-        val serverTask = ServerTask(task.file, task.assignmentId.toLong())
-        return assignmentService.uploadAssignment(serverTask)
+    fun uploadAssignment(@RequestParam("file") file: MultipartFile, @RequestParam("assignmentId") assignmentId: String): UploadedFile {
+        return assignmentService.uploadAssignment(UploadTask(file, assignmentId.toLong()))
     }
 
     fun updateAssignment(@PathVariable assignmentId: Long,
@@ -43,5 +42,4 @@ class AssignmentController(private val assignmentService: AssignmentService,
             dtoService.convert(assignmentService.updateAssignment(assignmentId, assignment))
 }
 
-data class ServerTask(val file: MultipartFile, val assignmentId: Long)
-data class UploadTask(val file: MultipartFile, val assignmentId: String)
+data class UploadTask(val file: MultipartFile, val assignmentId: Long)
