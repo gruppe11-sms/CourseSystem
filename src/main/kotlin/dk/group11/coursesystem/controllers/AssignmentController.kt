@@ -1,5 +1,7 @@
 package dk.group11.coursesystem.controllers
 
+import dk.group11.coursesystem.models.Assignment
+import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.models.AssembledAssignment
 import dk.group11.coursesystem.models.UploadedFile
 import dk.group11.coursesystem.services.AssignmentService
