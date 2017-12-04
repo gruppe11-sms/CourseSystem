@@ -2,21 +2,23 @@ package dk.group11.coursesystem.services
 
 import dk.group11.coursesystem.clients.*
 import dk.group11.coursesystem.controllers.CourseDTO
+import dk.group11.coursesystem.controllers.LessonDTO
 import dk.group11.coursesystem.controllers.RoomDTO
-import dk.group11.coursesystem.controllers.SimpleLessonDTO
-import dk.group11.coursesystem.exceptions.BadRequestException
-import dk.group11.coursesystem.models.AssembledLesson
+import dk.group11.coursesystem.models.Activity
 import dk.group11.coursesystem.models.Lesson
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.LessonRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
+import dk.group11.coursesystem.repositories.RoomRepository
 import org.springframework.stereotype.Service
 
-fun Lesson.toAuditEntryDTO(): SimpleLessonDTO {
-    return SimpleLessonDTO(
+fun Lesson.toAuditEntryDTO(): LessonDTO {
+    return LessonDTO(
             id = id,
             description = description,
-            activityId = activityId,
+            startDate = activity.startDate,
+            endDate = activity.endDate,
+            title = activity.title,
             course = CourseDTO(id = id),
             rooms = rooms.map { RoomDTO(id = it.id) }
     )
@@ -27,15 +29,14 @@ class LessonService(private val lessonRepository: LessonRepository,
                     private val courseRepository: CourseRepository,
                     private val auditClient: AuditClient,
                     private val participantRepository: ParticipantRepository,
-                    private val calendarClient: CalendarClient) {
+                    private val calendarClient: CalendarClient,
+                    private val roomRepository: RoomRepository) {
 
-    fun createLesson(lesson: AssembledLesson, courseId: Long): AssembledLesson {
+    private fun createLesson(lesson: Lesson, courseId: Long): Lesson {
         val course = courseRepository.findOne(courseId)
         lesson.course = course
 
-        val activity = calendarClient.createActivity(lesson.getActivity())
-        lesson.activityId = activity.id
-        val newLesson: Lesson = lessonRepository.save(lesson.getLesson())
+        val newLesson: Lesson = lessonRepository.save(lesson)
 
         auditClient.createEntry(
                 action = "[CourseSystem] Create Lesson",
@@ -44,31 +45,38 @@ class LessonService(private val lessonRepository: LessonRepository,
         return lesson
     }
 
-    fun getLessonsByUserId(userId: Long): List<Lesson> {
-        val participants = participantRepository.findByUserId(userId)
-        return participants.map { it.course }.flatMap { it.lessons }
+    fun createLesson(lessonDTO: LessonDTO): Lesson {
+
+        println(lessonDTO)
+
+        val activity = calendarClient.createActivity(Activity(title = lessonDTO.title, startDate = lessonDTO.startDate, endDate = lessonDTO.endDate))
+
+        val lesson = Lesson(activityId = activity.id, activity = activity, description = lessonDTO.description)
+
+        return createLesson(lesson, lessonDTO.id)
     }
 
-    fun getLesson(lessonId: Long): AssembledLesson {
-        val lesson = lessonRepository.findOne(lessonId)
+    fun getLesson(lessonId: Long): Lesson {
         auditClient.createEntry("[CourseSystem] Get Lesson", lessonId)
-        return assemble(lesson)
+        val lesson = lessonRepository.findOne(lessonId)
+        lesson.activity = calendarClient.getActivity(lesson.activityId)
+        return lesson
     }
 
-    fun updateLesson(lesson: AssembledLesson, lessonId: Long): AssembledLesson {
-        if (lesson.id != lessonId) {
-            throw BadRequestException("Lesson id attempted update does not match lessonId URL")
-        }
+    fun updateLesson(lesson: LessonDTO): Lesson {
         val before = lessonRepository.findOne(lesson.id)
-        val after = lessonRepository.save(lesson.getLesson())
-        calendarClient.updateActivity(lesson.getActivity())
-
 
         auditClient.createEntry(
                 action = "[CourseSystem] Update Lesson",
-                data = LessonAuditEntryUpdate(before = before.toAuditEntryDTO(), after = after.toAuditEntryDTO())
+                data = LessonAuditEntryUpdate(before = before.toAuditEntryDTO(), after = lesson)
         )
-        return lesson
+
+        before.description = lesson.description
+        before.rooms = lesson.rooms.map { roomRepository.findOne(it.id) }.toMutableSet()
+
+        calendarClient.updateActivity(Activity(before.activityId, lesson.title, lesson.startDate, lesson.endDate))
+
+        return before
     }
 
     fun deleteLesson(lessonId: Long) {
@@ -81,12 +89,10 @@ class LessonService(private val lessonRepository: LessonRepository,
         )
     }
 
-    fun getLessons(courseId: Long): List<AssembledLesson> {
+    fun getLessons(courseId: Long): Set<Lesson> {
         val lessons = courseRepository.findOne(courseId).lessons
         auditClient.createEntry(action = "[CourseSystem] Get Lessons for Course", data = courseId)
-        return lessons.map { assemble(it) }
+        return lessons
     }
 
-    fun assemble(lesson: Lesson): AssembledLesson =
-            AssembledLesson(lesson, calendarClient.getActivity(lesson.activityId))
 }

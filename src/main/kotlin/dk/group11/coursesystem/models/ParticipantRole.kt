@@ -6,7 +6,9 @@ import javax.persistence.GenerationType
 import javax.persistence.Id
 
 @Entity
-data class ParticipantRole(var title: String = "",
-                           var key: String = "",
-                           @Id @GeneratedValue(strategy = GenerationType.AUTO)
-                           var id: Long = 0)
+data class ParticipantRole(
+        var title: String = "",
+        var key: String = "",
+        @Id @GeneratedValue(strategy = GenerationType.AUTO)
+        var id: Long = 0
+)

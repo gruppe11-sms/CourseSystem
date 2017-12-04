@@ -3,13 +3,15 @@ package dk.group11.coursesystem.services
 import dk.group11.coursesystem.clients.AuditClient
 import dk.group11.coursesystem.clients.CalendarClient
 import dk.group11.coursesystem.clients.SimpleAssignmentAuditEntry
+import dk.group11.coursesystem.controllers.AssignmentDTO
 import dk.group11.coursesystem.controllers.SimpleAssignmentDTO
 import dk.group11.coursesystem.controllers.UploadTask
 import dk.group11.coursesystem.exceptions.BadRequestException
-import dk.group11.coursesystem.models.AssembledAssignment
+import dk.group11.coursesystem.models.Activity
 import dk.group11.coursesystem.models.Assignment
 import dk.group11.coursesystem.models.HandInAssignment
 import dk.group11.coursesystem.models.UploadedFile
+import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.HandInRepository
@@ -18,36 +20,60 @@ import dk.group11.coursesystem.security.SecurityService
 import dk.group11.coursesystem.services.fileService.storage.FileService
 import org.springframework.stereotype.Service
 
-
+// TODO add audit entries
 @Service
 class AssignmentService(private val assignmentRepository: AssignmentRepository,
                         private val courseRepository: CourseRepository,
                         private val auditClient: AuditClient,
-                        private val participantRepository: ParticipantRepository,
                         private val calendarClient: CalendarClient,
+                        private val participantRepository: ParticipantRepository,
                         private val fileService: FileService,
                         private val securityService: SecurityService,
                         private val handInRepository: HandInRepository) {
 
-    fun getAssignments(courseId: Long): Iterable<AssembledAssignment> {
+    fun getAssignments(courseId: Long): Iterable<Assignment> {
         val course = courseRepository.findOne(courseId)
         auditClient.createEntry("[CourseSystem] See all assignments", course.id)
-        return course.assignments.map { assemble(it) }
+        return course.assignments.map {
+            it.copy(activity = calendarClient.getActivity(it.activityId))
+        }
+
     }
 
-    fun getAssignment(assignmentId: Long): AssembledAssignment {
+    fun getAssignment(assignmentId: Long): Assignment {
         val assignment = assignmentRepository.findOne(assignmentId)
         auditClient.createEntry("[CourseSystem] See one assignment", assignmentId)
-        return assemble(assignment)
+
+        assignment.activity = calendarClient.getActivity(assignment.activityId)
+
+        return assignment
     }
 
-    fun updateAssignment(assignmentId: Long, assignment: AssembledAssignment): AssembledAssignment {
-        if (assignmentRepository.exists(assignmentId) && assignment.id == assignmentId)
-            assignmentRepository.save(assignment.getAssignment())
-        else
-            throw BadRequestException("Assignment wasn't updated")
-        calendarClient.updateActivity(assignment.getActivity())
+
+    fun updateAssignment(assignmentDTO: AssignmentDTO): Assignment {
+        val assignment = assignmentRepository.findOne(assignmentDTO.id) ?: throw BadRequestException("Assignment doesn't exist")
+        assignment.description = assignmentDTO.description
+
+        val activity = Activity(
+                id = assignment.activityId,
+                title = assignmentDTO.title,
+                startDate = assignmentDTO.startDate,
+                endDate = assignmentDTO.endDate
+        )
+        calendarClient.updateActivity(activity)
+
         return assignment
+    }
+
+    fun updateAssignment(assignment: Assignment): Assignment {
+        val currentAssignment = assignmentRepository.findOne(assignment.id) ?: throw BadRequestException("Assignment doesn't exists")
+
+        currentAssignment.description = assignment.description
+
+        calendarClient.updateActivity(assignment.activity)
+        currentAssignment.activity = assignment.activity
+
+        return currentAssignment
     }
 
     fun deleteAssignment(assignmentId: Long) {
@@ -56,25 +82,20 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         assignmentRepository.delete(assignmentId)
     }
 
-    fun getAllAssignments(): Iterable<AssembledAssignment> {
-        return assignmentRepository.findAll().map { assemble(it) }
+    fun getAllAssignments(): Iterable<Assignment> {
+        return assignmentRepository.findAll().map {
+            it.copy(activity = calendarClient.getActivity(it.activityId))
+        }
     }
 
-    fun createAssignment(courseId: Long, assignment: AssembledAssignment): AssembledAssignment {
-        // TODO clean up crazy code
+    fun createAssignment(courseId: Long, assignment: Assignment): Assignment {
+        val activity = calendarClient.createActivity(assignment.activity)
+        assignment.activityId = activity.id
         val course = courseRepository.findOne(courseId)
         assignment.course = course
-
-        val activity = calendarClient.createActivity(assignment.getActivity())
-        assignment.activityId = activity.id
-
-        assignmentRepository.save(assignment.getAssignment())
         assignment.participants.addAll(course.participants)
 
-        course.participants.forEach { it.assignments.add(assignment.getAssignment()) }
-        course.assignments.add(assignment.getAssignment())
-        courseRepository.save(course)
-
+        assignmentRepository.save(assignment)
         auditClient.createEntry(
                 action = "[CourseSystem] Assignment created",
                 data = SimpleAssignmentAuditEntry(
@@ -84,6 +105,20 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         return assignment
     }
 
+    fun createAssignment(courseId: Long, assignmentDTO: AssignmentDTO): Assignment {
+        val assignment = Assignment(
+                activity = Activity(
+                        title = assignmentDTO.title,
+                        startDate = assignmentDTO.startDate,
+                        endDate = assignmentDTO.endDate
+                ),
+                description = assignmentDTO.description,
+                participants = assignmentDTO.participants
+                        .map { Participant(it.userId) }.toMutableSet()
+        )
+
+        return createAssignment(courseId, assignment)
+    }
     fun uploadAssignment(task: UploadTask): UploadedFile {
         auditClient.createEntry("[CourseSystem] Assignment uploaded", task.assignmentId)
 
@@ -127,7 +162,4 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         return participantRepository.findByUserId(id).flatMap { it.assignments }
     }
 
-    fun assemble(assignment: Assignment): AssembledAssignment =
-            AssembledAssignment(assignment, calendarClient.getActivity(assignment.activityId))
 }
-

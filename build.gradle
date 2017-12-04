@@ -21,6 +21,7 @@ apply plugin: 'org.springframework.boot'
 group = 'dk.group11'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+archivesBaseName = "coursesystem"
 compileKotlin {
 	kotlinOptions.jvmTarget = "1.8"
 }
@@ -34,6 +35,12 @@ repositories {
 }
 
 
+kotlin {
+	experimental {
+		coroutines 'enable'
+	}
+}
+
 dependencies {
 	compile 'com.github.kittinunf.fuel:fuel:1.11.0'
 	compile 'com.github.kittinunf.fuel:fuel-gson:1.11.0'
@@ -44,10 +51,12 @@ dependencies {
 	compile("org.springframework.retry:spring-retry")
 	compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:${kotlinVersion}")
 	compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+	compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.2"
 	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.8.0'
 	compile('org.springframework.boot:spring-boot-starter-security')
 
 	runtime('org.postgresql:postgresql')
 
+	testCompile("com.h2database:h2:1.4.196")
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
