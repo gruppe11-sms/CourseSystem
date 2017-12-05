@@ -36,6 +36,4 @@ data class Evaluation(
     override fun hashCode(): Int {
         return id.hashCode()
     }
-
-
 }

@@ -7,11 +7,7 @@ import dk.group11.coursesystem.controllers.AssignmentDTO
 import dk.group11.coursesystem.controllers.SimpleAssignmentDTO
 import dk.group11.coursesystem.controllers.UploadTask
 import dk.group11.coursesystem.exceptions.BadRequestException
-import dk.group11.coursesystem.models.Activity
-import dk.group11.coursesystem.models.Assignment
-import dk.group11.coursesystem.models.HandInAssignment
-import dk.group11.coursesystem.models.UploadedFile
-import dk.group11.coursesystem.models.Participant
+import dk.group11.coursesystem.models.*
 import dk.group11.coursesystem.repositories.AssignmentRepository
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.HandInRepository
@@ -119,12 +115,12 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
 
         return createAssignment(courseId, assignment)
     }
+
     fun uploadAssignment(task: UploadTask): UploadedFile {
         auditClient.createEntry("[CourseSystem] Assignment uploaded", task.assignmentId)
 
 
-        val assignment = assignmentRepository
-                .findOne(task.assignmentId)
+        val assignment = assignmentRepository.findOne(task.assignmentId)
                 ?: throw BadRequestException("Assignment not found")
 
         // Finds a participant
@@ -138,7 +134,6 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
 
         //Finds a handIn or Null
         // TODO check in the database table handins if the assignment exists based on some criterias
-
         val handInExists = participant.handInAssignments.find { it.assignmentId == task.assignmentId }
 
         //Checks if the assignment already exists and adds it to the handInAssignment. Else create a new handin.
@@ -158,8 +153,21 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         return uploadedFileResponse
     }
 
-    fun getAssignmentsByUserId(id: Long): List<Assignment> {
-        return participantRepository.findByUserId(id).flatMap { it.assignments }
+    fun getAssignmentsByUserId(id: Long, amount: Int = -1): List<Assignment> {
+        val assignments = participantRepository.findByUserId(id)
+        val assignmentsFlatmap = assignments.flatMap { it.assignments }
+        val assignmentsMap = assignmentsFlatmap.map {
+            it.activity = calendarClient.getActivity(it.activityId)
+            it
+        }
+        val assignmentsSortedby = assignmentsMap.sortedBy { it.activity.endDate }
+
+        return if (amount != -1) {
+            assignmentsSortedby.take(amount)
+        } else {
+            assignmentsSortedby
+        }
+
     }
 
 }

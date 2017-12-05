@@ -45,7 +45,7 @@ class LessonService(private val lessonRepository: LessonRepository,
         return lesson
     }
 
-    fun createLesson(lessonDTO: LessonDTO): Lesson {
+    fun createLesson(lessonDTO: LessonDTO, courseId: Long): Lesson {
 
         println(lessonDTO)
 
@@ -53,7 +53,7 @@ class LessonService(private val lessonRepository: LessonRepository,
 
         val lesson = Lesson(activityId = activity.id, activity = activity, description = lessonDTO.description)
 
-        return createLesson(lesson, lessonDTO.id)
+        return createLesson(lesson, courseId)
     }
 
     fun getLesson(lessonId: Long): Lesson {

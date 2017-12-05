@@ -21,9 +21,7 @@ data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
                       @ManyToOne(cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
                       @JoinColumn
                       var course: Course = Course()
-)
-                      var course: Course = Course()) {
-
+) {
     fun toDTO(recursive: Boolean = true): AssignmentDTO {
         val participants = if (recursive)
             participants.map { it.toDTO(false) }
@@ -52,6 +50,4 @@ data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
     override fun hashCode(): Int {
         return id.hashCode()
     }
-
-
 }

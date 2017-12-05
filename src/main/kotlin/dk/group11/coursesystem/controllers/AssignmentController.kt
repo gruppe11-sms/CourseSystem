@@ -1,15 +1,15 @@
 package dk.group11.coursesystem.controllers
 
-import dk.group11.coursesystem.models.Assignment
-import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.models.UploadedFile
+import dk.group11.coursesystem.security.SecurityService
 import dk.group11.coursesystem.services.AssignmentService
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/courses")
-class AssignmentController(private val assignmentService: AssignmentService) {
+class AssignmentController(private val assignmentService: AssignmentService,
+                           private val securityService: SecurityService) {
 
     @GetMapping("{courseId}/assignments")
     fun getCourseAssignments(@PathVariable courseId: Long): Iterable<AssignmentDTO> =
@@ -24,6 +24,11 @@ class AssignmentController(private val assignmentService: AssignmentService) {
     fun getAllAssignments(): Iterable<AssignmentDTO> =
             assignmentService.getAllAssignments().map { it.toDTO(false) }
 
+    @GetMapping("home/assignments")
+    fun getComingAssignments(@RequestParam("amount", defaultValue = "") amount: String): Iterable<AssignmentDTO> {
+        return assignmentService.getAssignmentsByUserId(id = securityService.getId(), amount = amount.toInt()).map { it.toDTO() }
+    }
+
     @DeleteMapping("assignments/{assignmentId}")
     fun deleteAssignment(@PathVariable assignmentId: Long) = assignmentService.deleteAssignment(assignmentId)
 
@@ -35,6 +40,7 @@ class AssignmentController(private val assignmentService: AssignmentService) {
 
     @PostMapping("assignments/uploadAssignments")
     fun uploadAssignment(@RequestParam("file") file: MultipartFile, @RequestParam("assignmentId") assignmentId: String): UploadedFile {
+        println(assignmentId)
         return assignmentService.uploadAssignment(UploadTask(file, assignmentId.toLong()))
     }
 

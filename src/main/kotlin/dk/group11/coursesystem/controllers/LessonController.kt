@@ -14,7 +14,7 @@ class LessonController(private val lessonService: LessonService) {
 
     @PostMapping("/lessons")
     fun addLesson(@PathVariable courseId: Long, @RequestBody lesson: LessonDTO): LessonDTO {
-        return lessonService.createLesson(lesson).toDTO()
+        return lessonService.createLesson(lesson, courseId).toDTO()
     }
 
     @GetMapping("/lessons/{lessonId}")
