@@ -6,6 +6,8 @@ import dk.group11.coursesystem.clients.CourseAuditEntryDelete
 import dk.group11.coursesystem.clients.CourseAuditEntryGet
 import dk.group11.coursesystem.controllers.CourseDTO
 import dk.group11.coursesystem.exceptions.BadRequestException
+import dk.group11.coursesystem.helpers.concat
+import dk.group11.coursesystem.models.Activity
 import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.repositories.CourseRepository
@@ -24,12 +26,13 @@ class CourseService(private val courseRepository: CourseRepository,
     fun getCourseById(courseId: Long): Course {
         auditClient.createEntry("[CourseSystem] Get Course", CourseAuditEntryGet(courseId))
         val course = courseRepository.findOne(courseId)
+        val activities = calendarClient.getActivity(*course.assignments.map { it.activityId }.concat(course.lessons.map { it.activityId }).toLongArray())
         if (course != null) {
-            course.assignments.forEach {
-                it.activity = calendarClient.getActivity(it.activityId)
+            course.assignments.forEach { assignment ->
+                assignment.activity = activities.find { it.id == assignment.activityId } ?: Activity()
             }
-            course.lessons.forEach {
-                it.activity = calendarClient.getActivity(it.activityId)
+            course.lessons.forEach { lesson ->
+                lesson.activity = activities.find { it.id == lesson.activityId } ?: Activity()
             }
             return course
         } else {

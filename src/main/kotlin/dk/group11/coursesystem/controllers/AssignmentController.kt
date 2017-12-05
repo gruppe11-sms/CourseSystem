@@ -20,10 +20,6 @@ class AssignmentController(private val assignmentService: AssignmentService,
         return assignmentService.getAssignment(assignmentId).toDTO(false)
     }
 
-    @GetMapping("assignments")
-    fun getAllAssignments(): Iterable<AssignmentDTO> =
-            assignmentService.getAllAssignments().map { it.toDTO(false) }
-
     @GetMapping("home/assignments")
     fun getComingAssignments(@RequestParam("amount", defaultValue = "") amount: String): Iterable<AssignmentDTO> {
         return assignmentService.getAssignmentsByUserId(id = securityService.getId(), amount = amount.toInt()).map { it.toDTO() }

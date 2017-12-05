@@ -1,5 +1,6 @@
 package dk.group11.coursesystem.clients
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
 import dk.group11.coursesystem.models.Activity
@@ -9,12 +10,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
 
+private object actityArrayType : TypeReference<List<Activity>>()
+
 @Service
 class CalendarClient(private val calendarConfigProperties: CalendarConfigProperties,
                      private val securityService: ISecurityService) {
 
-    fun getActivity(activityId: Long): Activity {
-        val (_, response, result) = Fuel.get("${calendarConfigProperties.url}/api/activities/$activityId")
+    fun getActivity(vararg activityId: Long): List<Activity> {
+        val (_, response, result) = Fuel.get("${calendarConfigProperties.url}/api/activities/ids", listOf(Pair("ids", activityId.joinToString(","))))
                 .header(Pair("Accepts", "application/json"))
                 .header(Pair(HEADER_STRING, securityService.getToken()))
                 .responseString()
@@ -24,12 +27,12 @@ class CalendarClient(private val calendarConfigProperties: CalendarConfigPropert
 
         result.fold(
                 {
-                    return ObjectMapper().readValue(it, Activity::class.java)
+                    return ObjectMapper().readValue(it, actityArrayType)
                 },
                 {
                     System.err.println(it)
                     println(response)
-                    return Activity()
+                    return emptyList()
                 })
     }
 

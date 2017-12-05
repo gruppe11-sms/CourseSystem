@@ -30,9 +30,14 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
     fun getAssignments(courseId: Long): Iterable<Assignment> {
         val course = courseRepository.findOne(courseId)
         auditClient.createEntry("[CourseSystem] See all assignments", course.id)
-        return course.assignments.map {
-            it.copy(activity = calendarClient.getActivity(it.activityId))
+        val assignments = course.assignments.toList()
+
+        val activities = calendarClient.getActivity(*assignments.map { it.activityId }.toLongArray())
+        assignments.forEach { assignment ->
+            assignment.activity = activities.find { it.id == assignment.activityId } ?: Activity()
         }
+
+        return assignments
 
     }
 
@@ -40,7 +45,7 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         val assignment = assignmentRepository.findOne(assignmentId)
         auditClient.createEntry("[CourseSystem] See one assignment", assignmentId)
 
-        assignment.activity = calendarClient.getActivity(assignment.activityId)
+        assignment.activity = calendarClient.getActivity(assignment.activityId).first()
 
         return assignment
     }
@@ -76,12 +81,6 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         val assignment = assignmentRepository.findOne(assignmentId)
         calendarClient.deleteActivity(assignment.activityId)
         assignmentRepository.delete(assignmentId)
-    }
-
-    fun getAllAssignments(): Iterable<Assignment> {
-        return assignmentRepository.findAll().map {
-            it.copy(activity = calendarClient.getActivity(it.activityId))
-        }
     }
 
     fun createAssignment(courseId: Long, assignment: Assignment): Assignment {
@@ -154,18 +153,19 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
     }
 
     fun getAssignmentsByUserId(id: Long, amount: Int = -1): List<Assignment> {
-        val assignments = participantRepository.findByUserId(id)
-        val assignmentsFlatmap = assignments.flatMap { it.assignments }
-        val assignmentsMap = assignmentsFlatmap.map {
-            it.activity = calendarClient.getActivity(it.activityId)
-            it
+        val participants = participantRepository.findByUserId(id)
+        val assignments = participants.flatMap { it.assignments }.toList()
+        val activities = calendarClient.getActivity(*assignments.map { it.activityId }.toLongArray())
+        assignments.forEach { assignment ->
+            assignment.activity = activities.first { it.id == assignment.activityId }
         }
-        val assignmentsSortedby = assignmentsMap.sortedBy { it.activity.endDate }
+
+        val orderedAssignments = assignments.sortedBy { it.activity.endDate }
 
         return if (amount != -1) {
-            assignmentsSortedby.take(amount)
+            orderedAssignments.take(amount)
         } else {
-            assignmentsSortedby
+            orderedAssignments
         }
 
     }

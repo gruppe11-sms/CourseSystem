@@ -59,7 +59,7 @@ class LessonService(private val lessonRepository: LessonRepository,
     fun getLesson(lessonId: Long): Lesson {
         auditClient.createEntry("[CourseSystem] Get Lesson", lessonId)
         val lesson = lessonRepository.findOne(lessonId)
-        lesson.activity = calendarClient.getActivity(lesson.activityId)
+        lesson.activity = calendarClient.getActivity(lesson.activityId).first()
         return lesson
     }
 
