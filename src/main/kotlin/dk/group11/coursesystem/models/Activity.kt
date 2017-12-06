@@ -2,7 +2,15 @@ package dk.group11.coursesystem.models
 
 import java.util.*
 
-data class Activity(val id: Long = 0,
-                    val title: String = "",
-                    val startDate: Date = Date(),
-                    val endDate: Date = Date())
+data class Activity(
+        var id: Long = 0,
+        var title: String = "",
+        var startDate: Date = Date(),
+        var endDate: Date = Date(),
+
+        var participants: MutableSet<ActivityParticipant> = mutableSetOf()
+)
+
+data class ActivityParticipant(
+        var userId: Long = 0
+)

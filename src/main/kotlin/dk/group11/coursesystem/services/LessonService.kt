@@ -1,6 +1,9 @@
 package dk.group11.coursesystem.services
 
-import dk.group11.coursesystem.clients.*
+import dk.group11.coursesystem.clients.AuditClient
+import dk.group11.coursesystem.clients.LessonAuditEntryCreation
+import dk.group11.coursesystem.clients.LessonAuditEntryDelete
+import dk.group11.coursesystem.clients.LessonAuditEntryUpdate
 import dk.group11.coursesystem.controllers.CourseDTO
 import dk.group11.coursesystem.controllers.LessonDTO
 import dk.group11.coursesystem.controllers.RoomDTO
@@ -11,6 +14,7 @@ import dk.group11.coursesystem.repositories.LessonRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
 import dk.group11.coursesystem.repositories.RoomRepository
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 fun Lesson.toAuditEntryDTO(): LessonDTO {
     return LessonDTO(
@@ -29,12 +33,15 @@ class LessonService(private val lessonRepository: LessonRepository,
                     private val courseRepository: CourseRepository,
                     private val auditClient: AuditClient,
                     private val participantRepository: ParticipantRepository,
-                    private val calendarClient: CalendarClient,
+                    private val activityService: ActivityService,
                     private val roomRepository: RoomRepository) {
 
     private fun createLesson(lesson: Lesson, courseId: Long): Lesson {
         val course = courseRepository.findOne(courseId)
         lesson.course = course
+
+        lesson.activity = activityService.createActivity(lesson, course.participants)
+        lesson.activityId = lesson.activityId
 
         val newLesson: Lesson = lessonRepository.save(lesson)
 
@@ -46,12 +53,10 @@ class LessonService(private val lessonRepository: LessonRepository,
     }
 
     fun createLesson(lessonDTO: LessonDTO, courseId: Long): Lesson {
-
-        println(lessonDTO)
-
-        val activity = calendarClient.createActivity(Activity(title = lessonDTO.title, startDate = lessonDTO.startDate, endDate = lessonDTO.endDate))
-
-        val lesson = Lesson(activityId = activity.id, activity = activity, description = lessonDTO.description)
+        val lesson = Lesson(
+                activity = Activity(title = lessonDTO.title, startDate = lessonDTO.startDate, endDate = lessonDTO.endDate),
+                description = lessonDTO.description
+        )
 
         return createLesson(lesson, courseId)
     }
@@ -59,29 +64,49 @@ class LessonService(private val lessonRepository: LessonRepository,
     fun getLesson(lessonId: Long): Lesson {
         auditClient.createEntry("[CourseSystem] Get Lesson", lessonId)
         val lesson = lessonRepository.findOne(lessonId)
-        lesson.activity = calendarClient.getActivity(lesson.activityId).first()
+        lesson.activity = activityService.getActivity(lesson.activityId)
         return lesson
     }
 
-    fun updateLesson(lesson: LessonDTO): Lesson {
-        val before = lessonRepository.findOne(lesson.id)
+    @Transactional
+    fun updateLesson(lesson: Lesson): Lesson {
+
+        val currentLesson = lessonRepository.findOne(lesson.id)
+
 
         auditClient.createEntry(
                 action = "[CourseSystem] Update Lesson",
-                data = LessonAuditEntryUpdate(before = before.toAuditEntryDTO(), after = lesson)
+                data = LessonAuditEntryUpdate(before = currentLesson.toAuditEntryDTO(), after = lesson.toDTO(true))
         )
 
-        before.description = lesson.description
-        before.rooms = lesson.rooms.map { roomRepository.findOne(it.id) }.toMutableSet()
+        lesson.activity.id = currentLesson.activityId
 
-        calendarClient.updateActivity(Activity(before.activityId, lesson.title, lesson.startDate, lesson.endDate))
+        currentLesson.description = lesson.description
+        currentLesson.activity = activityService.updateActivity(lesson)
 
-        return before
+        currentLesson.rooms = lesson.rooms.map { roomRepository.findOne(it.id) }.toMutableSet()
+
+        return currentLesson
+    }
+
+    fun updateLesson(lessonDTO: LessonDTO): Lesson {
+
+        val lesson = Lesson(
+                id = lessonDTO.id,
+                activity = Activity(
+                        startDate = lessonDTO.startDate,
+                        endDate = lessonDTO.endDate,
+                        title = lessonDTO.title
+                ),
+                description = lessonDTO.description
+        )
+
+        return updateLesson(lesson)
     }
 
     fun deleteLesson(lessonId: Long) {
         val deleted = lessonRepository.findOne(lessonId)
-        calendarClient.deleteActivity(deleted.activityId)
+        activityService.deleteActivity(deleted.activityId)
         lessonRepository.delete(lessonId)
         auditClient.createEntry(
                 action = "[CourseSystem] Delete Lesson",

@@ -1,7 +1,6 @@
 package dk.group11.coursesystem.services
 
 import dk.group11.coursesystem.clients.AuditClient
-import dk.group11.coursesystem.clients.CalendarClient
 import dk.group11.coursesystem.clients.SimpleAssignmentAuditEntry
 import dk.group11.coursesystem.controllers.AssignmentDTO
 import dk.group11.coursesystem.controllers.SimpleAssignmentDTO
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Service
 class AssignmentService(private val assignmentRepository: AssignmentRepository,
                         private val courseRepository: CourseRepository,
                         private val auditClient: AuditClient,
-                        private val calendarClient: CalendarClient,
+                        private val activityService: ActivityService,
                         private val participantRepository: ParticipantRepository,
                         private val fileService: FileService,
                         private val securityService: SecurityService,
@@ -32,7 +31,7 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         auditClient.createEntry("[CourseSystem] See all assignments", course.id)
         val assignments = course.assignments.toList()
 
-        val activities = calendarClient.getActivity(*assignments.map { it.activityId }.toLongArray())
+        val activities = activityService.getActivities(assignments.map { it.activityId })
         assignments.forEach { assignment ->
             assignment.activity = activities.find { it.id == assignment.activityId } ?: Activity()
         }
@@ -45,7 +44,7 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         val assignment = assignmentRepository.findOne(assignmentId)
         auditClient.createEntry("[CourseSystem] See one assignment", assignmentId)
 
-        assignment.activity = calendarClient.getActivity(assignment.activityId).first()
+        assignment.activity = activityService.getActivity(assignment.activityId)
 
         return assignment
     }
@@ -55,13 +54,15 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
         val assignment = assignmentRepository.findOne(assignmentDTO.id) ?: throw BadRequestException("Assignment doesn't exist")
         assignment.description = assignmentDTO.description
 
-        val activity = Activity(
+        assignment.activity = Activity(
                 id = assignment.activityId,
                 title = assignmentDTO.title,
                 startDate = assignmentDTO.startDate,
-                endDate = assignmentDTO.endDate
+                endDate = assignmentDTO.endDate,
+                participants = assignment.participants.map { ActivityParticipant(it.id) }.toMutableSet()
         )
-        calendarClient.updateActivity(activity)
+
+        activityService.updateActivity(assignment)
 
         return assignment
     }
@@ -71,24 +72,24 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
 
         currentAssignment.description = assignment.description
 
-        calendarClient.updateActivity(assignment.activity)
-        currentAssignment.activity = assignment.activity
+        currentAssignment.activity = activityService.updateActivity(assignment)
 
         return currentAssignment
     }
 
     fun deleteAssignment(assignmentId: Long) {
         val assignment = assignmentRepository.findOne(assignmentId)
-        calendarClient.deleteActivity(assignment.activityId)
+        activityService.deleteActivity(assignment.activityId)
         assignmentRepository.delete(assignmentId)
     }
 
     fun createAssignment(courseId: Long, assignment: Assignment): Assignment {
-        val activity = calendarClient.createActivity(assignment.activity)
-        assignment.activityId = activity.id
         val course = courseRepository.findOne(courseId)
         assignment.course = course
         assignment.participants.addAll(course.participants)
+
+        val activity = activityService.createActivity(assignment)
+        assignment.activityId = activity.id
 
         assignmentRepository.save(assignment)
         auditClient.createEntry(
@@ -155,7 +156,7 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
     fun getAssignmentsByUserId(id: Long, amount: Int = -1): List<Assignment> {
         val participants = participantRepository.findByUserId(id)
         val assignments = participants.flatMap { it.assignments }.toList()
-        val activities = calendarClient.getActivity(*assignments.map { it.activityId }.toLongArray())
+        val activities = activityService.getActivities(assignments.map { it.activityId })
         assignments.forEach { assignment ->
             assignment.activity = activities.first { it.id == assignment.activityId }
         }
