@@ -46,6 +46,10 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
 
         assignment.activity = activityService.getActivity(assignment.activityId)
 
+        assignment.handInAssignments = assignment.handInAssignments
+                .filter { it.participant.userId == securityService.getId() }
+                .toMutableList()
+
         return assignment
     }
 
@@ -119,6 +123,7 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
     fun uploadAssignment(task: UploadTask): UploadedFile {
         auditClient.createEntry("[CourseSystem] Assignment uploaded", task.assignmentId)
 
+        val nameOfFile = task.file.originalFilename
 
         val assignment = assignmentRepository.findOne(task.assignmentId)
                 ?: throw BadRequestException("Assignment not found")
@@ -134,34 +139,61 @@ class AssignmentService(private val assignmentRepository: AssignmentRepository,
 
         //Finds a handIn or Null
         // TODO check in the database table handins if the assignment exists based on some criterias
-        val handInExists = participant.handInAssignments.find { it.assignmentId == task.assignmentId }
+        val handInExists = participant.handInAssignments.find { it.assignment.id == task.assignmentId }
 
         //Checks if the assignment already exists and adds it to the handInAssignment. Else create a new handin.
         if (handInExists != null) {
             participant.handInAssignments.forEach {
-                if (it.assignmentId == task.assignmentId) {
+                if (it.assignment.id == task.assignmentId) {
                     it.handInIds.add(uploadedFileResponse)
+                    it.fileNames.add(nameOfFile)
                 }
             }
         } else {
-            val newHandIn = HandInAssignment(handInIds = mutableListOf(uploadedFileResponse), assignmentId = task.assignmentId, participant = participant)
+            val newHandIn =
+                    HandInAssignment(handInIds = mutableListOf(uploadedFileResponse), assignment = assignment, participant = participant, fileNames = mutableListOf(nameOfFile))
             handInRepository.save(newHandIn)
             participant.handInAssignments.add(newHandIn)
+            assignment.handInAssignments.add(newHandIn)
         }
         participantRepository.save(participant)
-
+        assignmentRepository.save(assignment)
         return uploadedFileResponse
     }
 
     fun getAssignmentsByUserId(id: Long, amount: Int = -1): List<Assignment> {
+        // Here be dragons, do not try to understand what this does, however if you do you will go down in history as a legend
+        // (╯°□°)╯︵ ┻━┻
+        // TODO test if this works on multiple assignments for the same user
+        /*val assignments =
+                participantRepository.findByUserId(id)
+                        .flatMap { it.assignments }.toList()
+                        .map {
+                            it.activity = activityService.getActivity(it.activityId)
+                            it
+                        }
+                        .map {
+                            it.handInAssignments = it.handInAssignments
+                                    .filter { it.participant.userId == id }
+                                    .toMutableList()
+                            it
+                        }
+                        .sortedBy { it.activity.endDate }
+        */
         val participants = participantRepository.findByUserId(id)
         val assignments = participants.flatMap { it.assignments }.toList()
         val activities = activityService.getActivities(assignments.map { it.activityId })
         assignments.forEach { assignment ->
             assignment.activity = activities.first { it.id == assignment.activityId }
         }
+        val assignmentsWithHandins = assignments.map {
+            it.handInAssignments = it.handInAssignments
+                    .filter { it.participant.userId == id }
+                    .toMutableList()
+            it
+        }
 
-        val orderedAssignments = assignments.sortedBy { it.activity.endDate }
+        val orderedAssignments = assignmentsWithHandins.sortedBy { it.activity.endDate }
 
         return if (amount != -1) {
             orderedAssignments.take(amount)

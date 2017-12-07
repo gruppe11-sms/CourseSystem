@@ -1,5 +1,6 @@
 package dk.group11.coursesystem.controllers
 
+import dk.group11.coursesystem.models.*
 import java.util.*
 
 data class SimpleEventDTO(
@@ -49,7 +50,8 @@ data class AssignmentDTO(
         val participants: List<ParticipantDTO> = emptyList(),
         val title: String = "",
         val startDate: Date = Date(),
-        val endDate: Date = Date()
+        val endDate: Date = Date(),
+        val handinAssignments: List<HandinAssignmentDTO> = emptyList()
 )
 
 data class RoomDTO(
@@ -71,4 +73,11 @@ data class SimpleAssignmentDTO(
         val id: Long = 0,
         val description: String = "",
         val participants: List<ParticipantDTO> = emptyList()
+)
+
+data class HandinAssignmentDTO(
+        val id: Long = 0,
+        val handInIds: List<UploadedFile> = emptyList(),
+        val evaluations: List<EvaluationDTO> = emptyList(),
+        val fileNames: List<String> = emptyList()
 )

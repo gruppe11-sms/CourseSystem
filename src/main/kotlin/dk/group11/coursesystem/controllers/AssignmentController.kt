@@ -17,11 +17,11 @@ class AssignmentController(private val assignmentService: AssignmentService,
 
     @GetMapping("assignments/{assignmentId}")
     fun getOneAssignment(@PathVariable assignmentId: Long): AssignmentDTO {
-        return assignmentService.getAssignment(assignmentId).toDTO(false)
+        return assignmentService.getAssignment(assignmentId).toDTO()
     }
 
     @GetMapping("home/assignments")
-    fun getComingAssignments(@RequestParam("amount", defaultValue = "") amount: String): Iterable<AssignmentDTO> {
+    fun getComingAssignments(@RequestParam("amount", defaultValue = "-1") amount: String): Iterable<AssignmentDTO> {
         return assignmentService.getAssignmentsByUserId(id = securityService.getId(), amount = amount.toInt()).map { it.toDTO() }
     }
 

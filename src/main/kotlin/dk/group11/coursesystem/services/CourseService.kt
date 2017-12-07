@@ -12,6 +12,7 @@ import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.models.Participant
 import dk.group11.coursesystem.repositories.CourseRepository
 import dk.group11.coursesystem.repositories.ParticipantRepository
+import dk.group11.coursesystem.security.SecurityService
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
 
@@ -21,7 +22,8 @@ data class updateCourseAuditEntry(val before: CourseDTO, val after: CourseDTO)
 class CourseService(private val courseRepository: CourseRepository,
                     private val auditClient: AuditClient,
                     private val calendarClient: CalendarClient,
-                    private val participantRepository: ParticipantRepository) {
+                    private val participantRepository: ParticipantRepository,
+                    private val securityService: SecurityService) {
 
     fun getCourseById(courseId: Long): Course {
         auditClient.createEntry("[CourseSystem] Get Course", CourseAuditEntryGet(courseId))
@@ -40,13 +42,26 @@ class CourseService(private val courseRepository: CourseRepository,
         }
     }
 
-    fun getCourses(): Iterable<Course> {
+    fun getCourses(userId: Long): Iterable<Course> {
         auditClient.createEntry("[CourseSystem] Get All Courses", "")
         /* TODO The optimal solution for this implementation would be to ask the rolesystem
          * for what type of user is currently logged in, and we would have returned the
          * specific courses depending on the logged in type of user. (admin/normal user etc. */
-        // return participantRepository.findByUserId(securityService.getId()).map { it.course }
-        return courseRepository.findAll()
+
+
+        val courses = participantRepository.findByUserId(userId)
+                .map { it.course }
+        courses.forEach {
+            it.assignments = it.assignments.map {
+                it.handInAssignments = it.handInAssignments
+                        .filter { it.participant.userId == userId }
+                        .toMutableList()
+                it
+            }.toMutableSet()
+        }
+
+
+        return courses
     }
 
     fun createCourse(course: Course): Course {
