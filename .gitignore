@@ -200,3 +200,5 @@ $RECYCLE.BIN/
 *.lnk
 
 system_password
+
+signing_key

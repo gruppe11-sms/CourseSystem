@@ -4,24 +4,25 @@ import dk.group11.coursesystem.controllers.AssignmentDTO
 import javax.persistence.*
 
 @Entity
-data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
-                      var id: Long = 0,
-                      var activityId: Long = 0,
+data class Assignment(
+        @Id @GeneratedValue(strategy = GenerationType.AUTO)
+        var id: Long = 0,
+        var activityId: Long = 0,
 
-                      @Transient
-                      var activity: Activity = Activity(),
+        @Transient
+        var activity: Activity = Activity(),
 
-                      var description: String = "",
-                      @ManyToMany(cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-                      @JoinTable(name = "assignment_participants",
-                              joinColumns = arrayOf(JoinColumn(name = "assignment_id")),
-                              inverseJoinColumns = arrayOf(JoinColumn(name = "participant_id"))
-                      )
-                      var participants: MutableSet<Participant> = mutableSetOf(),
-                      @ManyToOne(cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
-                      @JoinColumn
-                      var course: Course = Course()) {
-
+        var description: String = "",
+        @ManyToMany(cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
+        @JoinTable(name = "assignment_participants",
+                joinColumns = arrayOf(JoinColumn(name = "assignment_id")),
+                inverseJoinColumns = arrayOf(JoinColumn(name = "participant_id"))
+        )
+        var participants: MutableSet<Participant> = mutableSetOf(),
+        @ManyToOne(cascade = arrayOf(CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.DETACH))
+        @JoinColumn
+        var course: Course = Course()
+) {
     fun toDTO(recursive: Boolean = true): AssignmentDTO {
         val participants = if (recursive)
             participants.map { it.toDTO(false) }
@@ -50,6 +51,4 @@ data class Assignment(@Id @GeneratedValue(strategy = GenerationType.AUTO)
     override fun hashCode(): Int {
         return id.hashCode()
     }
-
-
 }

@@ -14,6 +14,10 @@ data class Participant(
                 inverseJoinColumns = arrayOf(JoinColumn(name = "assignment_id"))
         )
         var assignments: MutableList<Assignment> = mutableListOf(),
+
+        @OneToMany(mappedBy = "participant", cascade = arrayOf(CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH))
+        var handInAssignments: MutableList<HandInAssignment> = mutableListOf(),
+
         @Id
         @GeneratedValue(strategy = GenerationType.AUTO)
         var id: Long = 0
@@ -43,6 +47,4 @@ data class Participant(
     override fun hashCode(): Int {
         return id.hashCode()
     }
-
-
 }
