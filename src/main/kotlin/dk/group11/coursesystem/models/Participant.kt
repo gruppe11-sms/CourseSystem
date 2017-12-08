@@ -39,12 +39,17 @@ data class Participant(
 
         other as Participant
 
+        if (userId != other.userId) return false
         if (id != other.id) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return id.hashCode()
+        var result = userId.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
     }
+
+
 }

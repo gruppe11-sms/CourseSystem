@@ -1,9 +1,7 @@
 package dk.group11.coursesystem.services
 
-import dk.group11.coursesystem.clients.AuditClient
-import dk.group11.coursesystem.clients.CalendarClient
-import dk.group11.coursesystem.clients.CourseAuditEntryDelete
-import dk.group11.coursesystem.clients.CourseAuditEntryGet
+import dk.group11.coursesystem.COURSE_MANAGEMENT_ROLE
+import dk.group11.coursesystem.clients.*
 import dk.group11.coursesystem.controllers.CourseDTO
 import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.helpers.concat
@@ -23,7 +21,8 @@ class CourseService(private val courseRepository: CourseRepository,
                     private val auditClient: AuditClient,
                     private val calendarClient: CalendarClient,
                     private val participantRepository: ParticipantRepository,
-                    private val securityService: SecurityService) {
+                    private val securityService: SecurityService,
+                    private val roleClient: RoleClient) {
 
     fun getCourseById(courseId: Long): Course {
         auditClient.createEntry("[CourseSystem] Get Course", CourseAuditEntryGet(courseId))
@@ -42,26 +41,28 @@ class CourseService(private val courseRepository: CourseRepository,
         }
     }
 
-    fun getCourses(userId: Long): Iterable<Course> {
+    fun getCourses(): Iterable<Course> {
         auditClient.createEntry("[CourseSystem] Get All Courses", "")
-        /* TODO The optimal solution for this implementation would be to ask the rolesystem
-         * for what type of user is currently logged in, and we would have returned the
-         * specific courses depending on the logged in type of user. (admin/normal user etc. */
+
+        return if (roleClient.hasRoles(securityService.getToken(), COURSE_MANAGEMENT_ROLE)) {
+            courseRepository.findAll()
+        } else {
+            val userId = securityService.getId()
+            val courses = participantRepository.findByUserId(userId)
+                    .map { it.course }
 
 
-        val courses = participantRepository.findByUserId(userId)
-                .map { it.course }
-        courses.forEach {
-            it.assignments = it.assignments.map {
-                it.handInAssignments = it.handInAssignments
-                        .filter { it.participant.userId == userId }
-                        .toMutableList()
-                it
-            }.toMutableSet()
+            courses.forEach {
+                it.assignments = it.assignments.map {
+                    it.handInAssignments = it.handInAssignments
+                            .filter { it.participant.userId == userId }
+                            .toMutableList()
+                    it
+                }.toMutableSet()
+            }
+
+            courses
         }
-
-
-        return courses
     }
 
     fun createCourse(course: Course): Course {
@@ -75,6 +76,8 @@ class CourseService(private val courseRepository: CourseRepository,
 
     @Transactional
     fun updateCourse(course: Course): Course {
+
+        println("Number of participants" + course.participants.size)
 
         val currentCourse = courseRepository.findOne(course.id)
         auditClient.createEntry("[CourseSystem] Update Course", updateCourseAuditEntry(currentCourse.toDTO(), course.toDTO()))
@@ -90,9 +93,11 @@ class CourseService(private val courseRepository: CourseRepository,
 
         // Add any new ones
         currentCourse.participants = course.participants.map {
+            println("looking for participant $it")
             var participant = participantRepository.findOne(it.id)
 
             if (participant == null) {
+                println("Participant ${it} does not exist, creating")
                 participant = Participant(userId = it.userId, course = currentCourse)
                 participantRepository.save(participant)
             }

@@ -11,6 +11,7 @@ import com.github.kittinunf.result.Result
 import dk.group11.coursesystem.security.HEADER_STRING
 import dk.group11.coursesystem.security.ISecretService
 import dk.group11.coursesystem.security.TOKEN_PREFIX
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -28,7 +29,7 @@ class RequestFailed : RuntimeException()
 private val JSON_CONTENT_TYPE = Pair("Content-Type", "application/json")
 
 @Service
-class RoleClient(private val roleConfigProperties: RoleConfigProperties, private val secretService: ISecretService) {
+class RoleClient(private val roleConfigProperties: RoleConfigProperties, private val secretService: ISecretService, private val loginClient: LoginClient) {
 
 
     private object UserType : TypeReference<Map<String, String>>()
@@ -56,30 +57,42 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties, private
 
     private class loginRequest(val username: String, val password: String) : Jsonable
 
-    @Retryable(maxAttempts = 2, backoff = Backoff(delay = 3000))
-    private fun login() {
-        val systemPassword = String(secretService.get("system_password")).trim()
-        val requestJson = loginRequest(roleConfigProperties.username, systemPassword).toJSON()
-        val (_, response, result) = Fuel.post("${roleConfigProperties.url}/login")
-                .header(JSON_CONTENT_TYPE)
-                .body(requestJson)
-                .responseString()
 
-        when (result) {
-            is Result.Success -> {
-                if (response.statusCode == HttpStatus.OK.value()) {
-                    val authHeaders = response.headers[HEADER_STRING]
-                    if (authHeaders != null) {
-                        token = authHeaders.first()
-                        println("Set token: $token")
-                        return
+    @Service
+    class LoginClient(private val secretService: ISecretService, private val roleConfigProperties: RoleConfigProperties) {
+
+        @Retryable(maxAttempts = 4, backoff = Backoff(delay = 3000))
+        fun login(): String {
+            LoggerFactory.getLogger(this.javaClass).info("Attempting to login")
+            val systemPassword = String(secretService.get("system_password")).trim()
+            LoggerFactory.getLogger(this.javaClass).info("system_password " + systemPassword)
+
+            val requestJson = RoleClient.loginRequest(roleConfigProperties.username, systemPassword).toJSON()
+            val (request, response, result) = Fuel.post("${roleConfigProperties.url}/login")
+                    .header(Pair("Content-Type", "application/json"))
+                    .body(requestJson)
+                    .responseString()
+
+
+            when (result) {
+                is Result.Success -> {
+                    if (response.statusCode == HttpStatus.OK.value()) {
+                        val authHeaders = response.headers[HEADER_STRING]
+                        if (authHeaders != null) {
+                            val token = authHeaders.first()
+                            println("Set token: $token")
+                            return token
+                        }
                     }
                 }
+                else -> {
+                    LoggerFactory.getLogger(this.javaClass).error(response.toString())
+                    LoggerFactory.getLogger(this.javaClass).error(result.toString())
+                    LoggerFactory.getLogger(this.javaClass).error(request.toString())
+                }
             }
-            else -> {
-            }
+            throw InternalServerError("Could not authorize with role system")
         }
-        throw InternalServerError("Could not authorize with role system")
     }
 
     /**
@@ -95,12 +108,12 @@ class RoleClient(private val roleConfigProperties: RoleConfigProperties, private
 
         when (result) {
             is Result.Failure -> {
-                login()
+                token = loginClient.login()
                 throw RequestFailed()
             }
             else -> {
                 if (response.statusCode == HttpStatus.FORBIDDEN.value()) {
-                    login()
+                    token = loginClient.login()
                     throw AccessDenied()
                 }
             }

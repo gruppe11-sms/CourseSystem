@@ -17,7 +17,7 @@ class CourseController(private val courseService: CourseService,
     fun getCourseById(@PathVariable courseId: Long): CourseDTO = courseService.getCourseById(courseId).toDTO(true)
 
     @GetMapping
-    fun getCourses(): Iterable<CourseDTO> = courseService.getCourses(securityService.getId()).map { it.toDTO(true) }
+    fun getCourses(): Iterable<CourseDTO> = courseService.getCourses().map { it.toDTO(true) }
 
     @PostMapping
     fun addCourse(@RequestBody course: Course): CourseDTO {
