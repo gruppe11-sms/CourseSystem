@@ -1,7 +1,6 @@
 package dk.group11.coursesystem.controllers
 
-import dk.group11.coursesystem.COURSE_CREATOR_ROLE
-import dk.group11.coursesystem.COURSE_MANAGEMENT_ROLE
+import dk.group11.coursesystem.COURSE_MANAGER_ROLE
 import dk.group11.coursesystem.exceptions.BadRequestException
 import dk.group11.coursesystem.models.Course
 import dk.group11.coursesystem.security.SecurityService
@@ -21,14 +20,14 @@ class CourseController(private val courseService: CourseService,
 
     @PostMapping
     fun addCourse(@RequestBody course: Course): CourseDTO {
-        securityService.requireRoles(COURSE_CREATOR_ROLE)
+        securityService.requireRoles(COURSE_MANAGER_ROLE)
         val newCourse = courseService.createCourse(course)
         return newCourse.toDTO(true)
     }
 
     @PutMapping("/{courseId}")
     fun updateCourse(@PathVariable courseId: Long, @RequestBody course: Course): CourseDTO {
-        securityService.requireRoles(COURSE_MANAGEMENT_ROLE)
+        securityService.requireRoles(COURSE_MANAGER_ROLE)
 
         if (course.id != courseId) {
             throw BadRequestException("Ids doesn't match")
@@ -40,7 +39,7 @@ class CourseController(private val courseService: CourseService,
 
     @DeleteMapping
     fun deleteCourse(id: Long) {
-        securityService.requireRoles(COURSE_MANAGEMENT_ROLE)
+        securityService.requireRoles(COURSE_MANAGER_ROLE)
         courseService.deleteCourse(id)
     }
 }

@@ -1,6 +1,6 @@
 package dk.group11.coursesystem.services
 
-import dk.group11.coursesystem.COURSE_MANAGEMENT_ROLE
+import dk.group11.coursesystem.COURSE_MANAGER_ROLE
 import dk.group11.coursesystem.clients.*
 import dk.group11.coursesystem.controllers.CourseDTO
 import dk.group11.coursesystem.exceptions.BadRequestException
@@ -44,7 +44,7 @@ class CourseService(private val courseRepository: CourseRepository,
     fun getCourses(): Iterable<Course> {
         auditClient.createEntry("[CourseSystem] Get All Courses", "")
 
-        return if (roleClient.hasRoles(securityService.getToken(), COURSE_MANAGEMENT_ROLE)) {
+        return if (roleClient.hasRoles(securityService.getToken(), COURSE_MANAGER_ROLE)) {
             courseRepository.findAll()
         } else {
             val userId = securityService.getId()
